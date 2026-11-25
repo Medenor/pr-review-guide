@@ -1,0 +1,13 @@
+{
+  "name": "pr-review-guide",
+  "description": "Turns a GitHub pull request into one local, interactive HTML review page: verdict and claims check, narrated code walkthrough with a sticky code panel, diagrams, reading order, risks, merge checklist, concept explainers with a quiz, and the full diff. Built for reviewing PRs written by AI agents.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Medenor",
+    "url": "https://github.com/Medenor"
+  },
+  "homepage": "https://github.com/Medenor/pr-review-guide",
+  "repository": "https://github.com/Medenor/pr-review-guide",
+  "license": "MIT",
+  "keywords": ["code-review", "pull-requests", "github", "ai-agents", "learning", "visualization"]
+}

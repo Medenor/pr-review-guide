@@ -1,0 +1,29 @@
+name: selftest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.9', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Self-test
+        run: python plugins/pr-review-guide/skills/pr-review-guide/scripts/selftest.py
+      - name: Manifests are valid JSON
+        run: |
+          python -c "import json; json.load(open('.claude-plugin/marketplace.json')); json.load(open('plugins/pr-review-guide/.claude-plugin/plugin.json'))"

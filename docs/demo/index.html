@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review · PromptVault #130</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>/* Layout: sticky top bar with tabs; one centred column per tab; the walkthrough splits into
+   steps (left) and a sticky code panel (right); the diff tab adds a file rail on wide screens. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --surface-2: #eef1f5; --line: #dde2e9; --line-strong: #c4ccd8;
+  --fg: #18202b; --fg-2: #4a5566; --fg-3: #6f7a8b;
+  --accent: #1f5fd1; --accent-soft: #e4ecfb; --accent-fg: #ffffff;
+  --add-bg: #e7f6ea; --add-strong: #b8e6c1; --add-fg: #176b2c;
+  --del-bg: #fcebec; --del-strong: #f5c1c5; --del-fg: #a3202c;
+  --hl: #fff4c7; --hl-edge: #e0a400;
+  --ok: #1b7f3b; --ok-bg: #e3f4e8; --warn: #9a6100; --warn-bg: #fbf0d9; --bad: #b42331; --bad-bg: #fbe6e8;
+  --info: #4a5566; --info-bg: #eceff4;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .05);
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-head: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #161d26; --surface-2: #1d2631; --line: #283342; --line-strong: #3a4757;
+    --fg: #e6ebf2; --fg-2: #a9b4c4; --fg-3: #7d899b;
+    --accent: #6f9cff; --accent-soft: #1c2a44; --accent-fg: #0b1220;
+    --add-bg: #12301d; --add-strong: #1f5a33; --add-fg: #7ddc97;
+    --del-bg: #3a171c; --del-strong: #6b2630; --del-fg: #ff9aa4;
+    --hl: #3a3215; --hl-edge: #e0b13a;
+    --ok: #6fd58d; --ok-bg: #143021; --warn: #f0b955; --warn-bg: #352a12; --bad: #ff8691; --bad-bg: #3a1820;
+    --info: #a9b4c4; --info-bg: #222c38;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 16px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #161d26; --surface-2: #1d2631; --line: #283342; --line-strong: #3a4757;
+  --fg: #e6ebf2; --fg-2: #a9b4c4; --fg-3: #7d899b;
+  --accent: #6f9cff; --accent-soft: #1c2a44; --accent-fg: #0b1220;
+  --add-bg: #12301d; --add-strong: #1f5a33; --add-fg: #7ddc97;
+  --del-bg: #3a171c; --del-strong: #6b2630; --del-fg: #ff9aa4;
+  --hl: #3a3215; --hl-edge: #e0b13a;
+  --ok: #6fd58d; --ok-bg: #143021; --warn: #f0b955; --warn-bg: #352a12; --bad: #ff8691; --bad-bg: #3a1820;
+  --info: #a9b4c4; --info-bg: #222c38;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 16px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: 72px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, .mono, .code, pre, textarea { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+code, .mono { font-family: var(--font-mono); font-size: .88em; }
+p code, li code, td code, .md code { background: var(--surface-2); padding: .08em .35em; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-head); line-height: 1.25; text-wrap: balance; margin: 0; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+[hidden] { display: none !important; }
+
+/* top bar */
+.topbar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.topbar-inner { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 16px;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+.brand { font: 600 .95rem var(--font-head); color: var(--fg); white-space: nowrap; }
+.brand span { color: var(--fg-3); font-weight: 500; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.tabs a { padding: 6px 12px; border-radius: 8px; color: var(--fg-2); font-weight: 500; font-size: .92rem; white-space: nowrap; }
+.tabs a:hover { background: var(--surface-2); text-decoration: none; }
+.tabs a.active { background: var(--accent-soft); color: var(--accent); }
+.icon-btn { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; flex: none; }
+
+main { max-width: 1320px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); }
+.narrow { max-width: 920px; margin: 0 auto; }
+.stack { display: flex; flex-direction: column; gap: 28px; }
+.foot { text-align: center; color: var(--fg-3); font-size: .8rem; padding: 0 16px 32px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+.eyebrow { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
+.muted { color: var(--fg-2); }
+.small { font-size: .85rem; }
+.md p { margin: 0 0 .7em; }
+.md p:last-child { margin-bottom: 0; }
+.md ul { margin: .2em 0 .7em; padding-left: 1.2em; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.mine { font-size: .7rem; color: var(--fg-3); border: 1px dashed var(--line-strong); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: .75rem; font-weight: 600; padding: 2px 9px;
+  border-radius: 999px; background: var(--info-bg); color: var(--info); white-space: nowrap; line-height: 1.6; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.accent { background: var(--accent-soft); color: var(--accent); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* warnings banner */
+#warnings .banner { max-width: 1320px; margin: 12px auto 0; padding: 0 16px; }
+#warnings details { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 8px 14px; font-size: .88rem; }
+#warnings ul { margin: 6px 0 2px; padding-left: 1.2em; }
+
+/* summary */
+.hero { display: flex; flex-direction: column; gap: 10px; }
+.hero h1 { font-size: clamp(1.5rem, 3vw, 2.1rem); }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--fg-2); font-size: .9rem; }
+.verdict { border-left: 5px solid var(--accent); display: grid; gap: 10px; }
+.verdict.approve { border-left-color: var(--ok); }
+.verdict.approve-with-nits { border-left-color: var(--ok); }
+.verdict.request-changes { border-left-color: var(--bad); }
+.verdict.needs-discussion { border-left-color: var(--warn); }
+.verdict .headline { font: 600 1.3rem/1.35 var(--font-head); }
+.verdict-top { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.stat .v { font: 600 1.35rem var(--font-head); font-variant-numeric: tabular-nums; }
+.stat .l { font-size: .8rem; color: var(--fg-2); }
+.stat .n { font-size: .75rem; color: var(--fg-3); }
+.v .add { color: var(--add-fg); } .v .del { color: var(--del-fg); }
+.compo-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--surface-2); margin: 8px 0 10px; }
+.compo-bar span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .82rem; color: var(--fg-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.two-col > * { min-width: 0; }
+.claims { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.claims td { padding: 10px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+.claims td:first-child { width: 120px; }
+.claims .ev { color: var(--fg-2); font-size: .85rem; margin-top: 4px; }
+.qlist { margin: 0; padding-left: 1.2em; }
+.qlist li { margin-bottom: 6px; }
+.ci-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.linked { display: grid; gap: 8px; }
+.linked a { display: flex; gap: 8px; align-items: baseline; color: var(--fg); }
+.linked .num { color: var(--fg-3); font-family: var(--font-mono); font-size: .85rem; }
+
+/* walkthrough */
+.walk { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; align-items: start; }
+.steps { display: flex; flex-direction: column; gap: 18px; padding-bottom: 45vh; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px;
+  transition: border-color .2s, box-shadow .2s, background .2s; cursor: pointer; }
+.step.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); box-shadow: var(--shadow); }
+.step-num { font: 600 .78rem var(--font-mono); color: var(--accent); }
+.step h3 { margin: 4px 0 6px; font-size: 1.08rem; }
+.step .where { font-family: var(--font-mono); font-size: .75rem; color: var(--fg-3); margin-top: 8px; word-break: break-all; }
+details.more { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
+details.more summary { cursor: pointer; color: var(--accent); font-size: .87rem; font-weight: 500; }
+details.more .md { margin-top: 8px; font-size: .92rem; }
+.panel { position: sticky; top: 72px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; flex-direction: column; max-height: calc(100vh - 96px); overflow: hidden; }
+.panel-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); flex-wrap: wrap; }
+.panel-head .path { font: 600 .82rem var(--font-mono); word-break: break-all; flex: 1; min-width: 0; }
+.panel-body { overflow: auto; flex: 1; scroll-behavior: smooth; }
+.excerpt { display: none; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.progress { height: 3px; background: var(--surface-2); }
+.progress span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+
+/* code lines */
+.code { font: 12.5px/1.55 var(--font-mono); }
+.hunk-head { background: var(--accent-soft); color: var(--fg-2); padding: 3px 12px; font-size: 12px; position: sticky; left: 0; }
+.ln { display: grid; grid-template-columns: 44px 44px 18px minmax(0, 1fr); transition: opacity .25s, background .25s; }
+.ln .no { color: var(--fg-3); text-align: right; padding-right: 8px; user-select: none; font-size: 11.5px; }
+.ln .sig { color: var(--fg-3); user-select: none; text-align: center; }
+.ln code { white-space: pre-wrap; word-break: break-word; font-size: inherit; background: none; padding: 0 12px 0 0; }
+.ln.add { background: var(--add-bg); } .ln.add .sig { color: var(--add-fg); }
+.ln.del { background: var(--del-bg); } .ln.del .sig { color: var(--del-fg); }
+.ln ins { background: var(--add-strong); text-decoration: none; border-radius: 2px; }
+.ln del { background: var(--del-strong); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--del-fg) 50%, transparent); border-radius: 2px; }
+.code.focus .ln { opacity: .38; }
+.code.focus .ln.hl { opacity: 1; box-shadow: inset 3px 0 0 var(--hl-edge); }
+.code.focus .ln.hl:not(.add):not(.del) { background: var(--hl); }
+.ln.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0%, 30% { box-shadow: inset 4px 0 0 var(--hl-edge); background: var(--hl); } }
+.gap-row { color: var(--fg-3); font-size: 11.5px; padding: 2px 12px; background: var(--surface-2); font-style: italic; }
+
+/* map */
+.reading { display: flex; flex-direction: column; gap: 0; }
+.ro { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 4px; border-top: 1px solid var(--line); }
+.ro:first-child { border-top: none; }
+.ro-n { font: 600 .9rem var(--font-mono); color: var(--fg-3); text-align: right; padding-top: 2px; }
+.ro .path { font: 600 .85rem var(--font-mono); word-break: break-all; }
+.ro.skip { opacity: .65; }
+.ro-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.diagram { overflow-x: auto; }
+.diagram .mermaid-src { white-space: pre; font: 12px/1.5 var(--font-mono); color: var(--fg-2); background: var(--surface-2); padding: 12px; border-radius: 8px; }
+.diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+/* risks + checklist */
+.risk { border-left: 4px solid var(--line-strong); display: grid; gap: 6px; }
+.risk.high { border-left-color: var(--bad); } .risk.medium { border-left-color: var(--warn); } .risk.low { border-left-color: var(--fg-3); }
+.risk .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.risk .catch { font-size: .87rem; color: var(--fg-2); }
+.check-item { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.check-item:first-of-type { border-top: none; }
+.check-item input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); }
+.check-item.done .txt { color: var(--fg-3); text-decoration: line-through; }
+.meter { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--ok); transition: width .3s; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer; font-weight: 500; font-size: .88rem; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+textarea.notes { width: 100%; min-height: 180px; font: 12.5px/1.5 var(--font-mono); background: var(--surface-2); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-top: 10px; }
+.reflink { font-family: var(--font-mono); font-size: .78rem; cursor: pointer; }
+
+/* learn */
+.concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.concept h3 { font-family: var(--font-mono); font-size: .98rem; }
+.concept .short { color: var(--fg-2); font-size: .9rem; margin: 4px 0 10px; }
+.try-select { display: block; width: 100%; margin: 4px 0 12px; padding: 8px 10px; font: 13px var(--font-mono); background: var(--surface-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 8px; }
+.try-out { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.try-cell { border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.try-cell.del { background: var(--del-bg); } .try-cell.add { background: var(--add-bg); }
+.try-cell code { display: block; margin-top: 4px; white-space: pre-wrap; word-break: break-all; background: none; padding: 0; }
+.quiz-q { display: grid; gap: 10px; }
+.quiz-opts { display: grid; gap: 8px; }
+.quiz-opt { text-align: left; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+.quiz-opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-opt.right { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.quiz-opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-explain { font-size: .9rem; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.score { font: 600 1rem var(--font-head); }
+
+/* diff */
+.diff-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; align-items: start; }
+.rail { position: sticky; top: 72px; max-height: calc(100vh - 96px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; }
+.rail a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 5px 8px; border-radius: 6px; color: var(--fg); font-size: .8rem; }
+.rail a:hover { background: var(--surface-2); text-decoration: none; }
+.rail a .p { font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail a.viewed { opacity: .5; }
+.rail .nums { font-variant-numeric: tabular-nums; font-size: .75rem; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.file { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+.file.viewed { opacity: .6; }
+.file-head { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); flex-wrap: wrap; cursor: pointer; }
+.file-head .path { font: 600 .84rem var(--font-mono); word-break: break-all; flex: 1; min-width: 0; }
+.file-head .tw { width: 14px; color: var(--fg-3); transition: transform .2s; }
+.file.open .file-head .tw { transform: rotate(90deg); }
+.file-note { padding: 8px 14px; font-size: .87rem; color: var(--fg-2); border-bottom: 1px solid var(--line); }
+.file-body { overflow-x: auto; }
+.nums .add { color: var(--add-fg); } .nums .del { color: var(--del-fg); }
+label.viewed-box { display: inline-flex; gap: 6px; align-items: center; font-size: .8rem; color: var(--fg-2); cursor: pointer; }
+
+@media (max-width: 960px) {
+  .walk { grid-template-columns: minmax(0, 1fr); }
+  .panel { display: none; }
+  .excerpt { display: block; }
+  .steps { padding-bottom: 0; }
+  .diff-layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; }
+  .two-col { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .brand { display: none; }
+  .ln { grid-template-columns: 38px 16px minmax(0, 1fr); }
+  .ln .no.o { display: none; }
+  .card { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+main, .tab, .steps, .step, .narrow { min-width: 0; }
+.step, .card { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#summary" id="brand"></a>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#summary" data-tab="summary">Summary</a>
+      <a href="#walkthrough" data-tab="walkthrough">Walkthrough</a>
+      <a href="#map" data-tab="map">Map</a>
+      <a href="#risks" data-tab="risks">Risks &amp; checklist</a>
+      <a href="#learn" data-tab="learn">Learn</a>
+      <a href="#diff" data-tab="diff">Diff</a>
+    </nav>
+    <button class="icon-btn" id="theme-btn" type="button" title="Switch theme" aria-label="Switch theme">◐</button>
+  </div>
+</header>
+<div id="warnings"></div>
+<main>
+  <section id="tab-summary" class="tab" data-tab="summary"></section>
+  <section id="tab-walkthrough" class="tab" data-tab="walkthrough" hidden></section>
+  <section id="tab-map" class="tab" data-tab="map" hidden></section>
+  <section id="tab-risks" class="tab" data-tab="risks" hidden></section>
+  <section id="tab-learn" class="tab" data-tab="learn" hidden></section>
+  <section id="tab-diff" class="tab" data-tab="diff" hidden></section>
+</main>
+<footer class="foot" id="foot"></footer>
+<script type="application/json" id="data">{"pr": {"repo": "Medenor/PromptVault", "number": 130, "title": "feat(db): move to psycopg v3 and run PostgreSQL tests in CI", "url": "https://github.com/Medenor/PromptVault/pull/130", "author": "Medenor", "state": "merged", "base": "main", "head": "feat/psycopg3-and-postgres-ci", "base_sha": "e0f35519b5802c93e955224404a690b359aab6ae", "head_sha": "981786b4273d46d8fea946a0f23c2eee93805b21", "created_at": "2026-11-24T16:56:40Z", "merged_at": "2026-11-24T17:16:33Z", "closed_at": "2026-11-24T17:16:33Z", "body": "Refs #127. Stacked on #128 (base is that branch, so the diff shows only this change; GitHub retargets to `main` once #128 merges).\n\nRefs #127. Builds on #128 (merged as e0f3551), which pinned psycopg2 as the 1.16.1 hotfix; this replaces that pin with psycopg v3.\n\n1. **PostgreSQL driver: psycopg2 to psycopg v3.** `psycopg2-binary` is replaced by `psycopg[binary]` (SQLAlchemy 2.1's default driver), and `uv.lock` is regenerated (only the two driver packages change). `DatabaseSettings.sqlalchemy_url` makes a bare `postgresql://` explicit as `postgresql+psycopg://` and maps the legacy `postgresql+psycopg2://` to it, so existing `.env` files keep working with no edit. `pg_dump`/`psql` still get a plain URI through `libpq_url`.\n2. **PostgreSQL tests in CI.** New `test-postgres` job with a `postgres:15-alpine` service, running `make test-postgres`. It includes the real `pg_dump`/`psql` backup round trip, which is skipped on machines without those tools. This is the check that would have caught #126. The job is not a required check yet.\n3. **`make test-postgres`** runs each PostgreSQL test file as its own pytest process and resets the database between files. The migration tests leave tables behind, which broke later files when run in one session (`search_vector already exists`). The reset script drops and recreates the `public` schema, so it refuses unless the database name contains `test`.\n4. **Test helper fix:** `test_migration_prompt_legacy_public.py` read `cursor.lastrowid`, which psycopg v3 lacks. It now uses `RETURNING id`.\n\n## Verified\n\n- All 9 PostgreSQL test files pass against a real PostgreSQL 15 on psycopg 3.3.9 (FTS search and snippets, FTS migration, skill search, both skill/prompt migrations, backup round trip: 61 passed, 1 skipped: the `pg_dump` round trip, no client tools locally).\n- Built the real image (`python:3.15-slim`) and ran the Alembic upgrade in it against a fresh PostgreSQL 15 database: a bare `postgresql://` URL migrated it to head (23 tables), and the legacy `postgresql+psycopg2://` URL also connected. The app's own `engine` connects through the `psycopg` driver. A cp315 binary wheel exists, so the image needs no compiler for it.\n- `tests/test_db_url_driver.py` updated (15 tests), including a check that the resolved driver's DBAPI actually imports.\n- black, ruff and mypy are clean.\n\n## Notes for reviewers\n\n- Existing deployments need no `DATABASE_URL` change. The `gcc` line in the Dockerfile is left as is; it can be dropped separately once nothing else needs a compiler.\n- Possible behavior difference: psycopg v3 binds parameters server-side and is stricter about types than psycopg2. The 6 raw `text()` queries and the FTS queries are exercised by the PostgreSQL tests above and passed.\n- PgBouncer in transaction mode would need `prepare_threshold=None`; PromptVault does not configure a pooler.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01Vs1Ap9DnWqtdrgXWBiFgBv\n", "labels": [], "agent_written": true, "agent_evidence": ["PR body names an AI coding tool", "commits co-authored by an AI agent"], "commits": [{"sha": "981786b4273d46d8fea946a0f23c2eee93805b21", "headline": "feat(db): move PostgreSQL driver to psycopg v3 and run PostgreSQL tes…", "authors": ["Medenor", "claude"], "agent": true}], "checks": [{"name": "changes", "workflow": "CI", "result": "success", "url": "https://github.com/Medenor/PromptVault/actions/runs/45444743298/job/138625281027"}, {"name": "lint", "workflow": "CI", "result": "success", "url": "https://github.com/Medenor/PromptVault/actions/runs/45444743298/job/138625281269"}, {"name": "test", "workflow": "CI", "result": "success", "url": "https://github.com/Medenor/PromptVault/actions/runs/45444743298/job/138625280683"}, {"name": "test-postgres", "workflow": "CI", "result": "success", "url": "https://github.com/Medenor/PromptVault/actions/runs/45444743298/job/138625281098"}], "reviews": [], "comment_count": 0, "linked_issues": [{"number": 127, "title": "chore(db): migrate PostgreSQL driver from psycopg2 to psycopg v3", "state": "closed", "kind": "issue", "url": "https://github.com/Medenor/PromptVault/issues/127", "body": "## Context\n\nThe PostgreSQL driver regression (#126) is fixed short-term by pinning `psycopg2`. SQLAlchemy 2.1 made **psycopg v3** its default PostgreSQL driver, so the project now runs on the non-default driver.\n\n## Proposal (later, not urgent)\n\nMove to `psycopg[binary]` (v3):\n\n- replace `psycopg2-binary` in `pyproject.toml` / `uv.lock`\n- make `sqlalchemy_url` default a bare `postgresql://` to `postgresql+psycopg://` (or stop rewriting it)\n- check pool / `pool_pre_ping` behavior, `scripts/setup/` generated URLs, the APScheduler job store and Alembic\n- test against a real PostgreSQL 15 in CI (the suite currently runs only on SQLite, which is how the regression went unnoticed)\n- document the upgrade for existing deployments (URLs with an explicit `+psycopg2` need changing)\n"}, {"number": 128, "title": "fix(db): pin bare postgresql:// URLs to psycopg2 under SQLAlchemy 2.1", "state": "closed", "kind": "pull request", "url": "https://github.com/Medenor/PromptVault/pull/128", "body": "Closes #126\n\n## Problem\n\nSQLAlchemy 2.1 (bumped by #86) resolves a bare `postgresql://` URL to the psycopg v3 dialect, but only `psycopg2-binary` is installed. Every PostgreSQL deployment crashed at import with `No module named 'psycopg'` (web server and Alembic). The test suite runs on SQLite, so CI did not notice.\n\n## Fix\n\n`DATABASE_URL` is left as the user wrote it. `DatabaseSettings` gains two derived views:\n\n- `sqlalchemy_url`: a bare `postgresql://` becomes `postgresql+psycopg2://`; a URL with an explicit driver is unchanged. Used by the engine (`src/db/session.py`), Alembic (`alembic/env.py`) and the APScheduler job store.\n- `libpq_url`: any `+driver` suffix is removed. Used by `pg_dump` / `psql`, because libpq rejects `postgresql+psycopg2://`. This also keeps backups working for anyone who applied the `+psycopg2` workaround in `DATABASE_URL`.\n\nNo configuration change is needed. SQLite is unaffected. Moving to psycopg v3 is tracked in #127.\n\n## Tests\n\n- New `tests/test_db_url_driver.py` (15 tests): resolved dialect driver, explicit drivers and SQLite untouched, `DATABASE_URL` not rewritten, libpq view, and `pg_dump` / `psql` receiving the plain URI. 13 of the 15 fail without the fix.\n- Verified a real `create_engine(sqlalchemy_url)` loads `psycopg2`.\n- Full backend suite: 2831 passed, 41 skipped. 4 `test_template_snapshots` cases fail identically on clean `origin/main` in a fresh worktree because the built frontend (`static/dist`) is absent there, so they are an enviro"}, {"number": 126, "title": "fix(db): bare postgresql:// resolves to psycopg v3 under SQLAlchemy 2.1; web crash-loops on PostgreSQL", "state": "closed", "kind": "issue", "url": "https://github.com/Medenor/PromptVault/issues/126", "body": "## Problem\n\nSince #86 (Dependabot group bump, 2026-11-20) SQLAlchemy is `>=2.1.9,<2.2`. SQLAlchemy 2.1 resolves a bare `postgresql://` URL to the **psycopg v3** dialect, but the project only ships `psycopg2-binary`. Every PostgreSQL deployment built from `main` (including v1.16.0) fails at import:\n\n```\nFile \".../sqlalchemy/dialects/postgresql/psycopg.py\", line 497, in import_dbapi\n    import psycopg\nModuleNotFoundError: No module named 'psycopg'. Did you mean: 'psycopg2'?\n```\n\nThe `web` container crash-loops and the Alembic upgrade command fails the same way. CI did not catch it because the test suite runs on SQLite.\n\nVerified in the built image: `make_url(\"postgresql://u:p@h/d\").get_dialect().driver == \"psycopg\"`.\n\n## Affected\n\nAll PostgreSQL deployments using a plain `postgresql://` URL (the default in `docker-compose.yml`, `.env.example` and every URL generated by `scripts/setup/`) on builds after #86, including 1.16.0. SQLite is unaffected.\n\n## Workaround\n\nSet `DATABASE_URL=postgresql+psycopg2://...`. Caveat: `PostgresDumpStrategy` passes `DATABASE_URL` to `pg_dump`/`psql`, and libpq rejects a `+driver` URI, so backups break with this workaround until the fix below ships.\n\n## Proposed fix\n\nKeep `DATABASE_URL` as the user wrote it and expose two derived views on `DatabaseSettings`:\n\n- `sqlalchemy_url`: bare `postgresql://` becomes `postgresql+psycopg2://`; an explicit driver is left alone. Used by `src/db/session.py`, `alembic/env.py` and the APScheduler job store.\n- `libp"}], "diff_source": "GitHub API (gh pr diff)", "additions": 199, "deletions": 58, "read_minutes": 7, "files": [{"path": ".github/workflows/ci.yml", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 127, "old_lines": 3, "new_start": 127, "new_lines": 50, "context": "jobs:", "lines": [[" ", 127, 127, ""], [" ", 128, 128, "      - name: Test"], [" ", 129, 129, "        run: make test"], ["+", null, 130, ""], ["+", null, 131, "  # The `test` job runs on SQLite, so a PostgreSQL-only regression (wrong driver,"], ["+", null, 132, "  # dialect-specific SQL, pg_dump/psql backups) passes it unnoticed. This job runs the"], ["+", null, 133, "  # PostgreSQL legs of the suite against a real server. Not a required check yet."], ["+", null, 134, "  test-postgres:"], ["+", null, 135, "    name: test-postgres"], ["+", null, 136, "    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true"], ["+", null, 137, "    runs-on: ubuntu-latest"], ["+", null, 138, "    timeout-minutes: 15"], ["+", null, 139, "    services:"], ["+", null, 140, "      postgres:"], ["+", null, 141, "        image: postgres:15-alpine"], ["+", null, 142, "        env:"], ["+", null, 143, "          POSTGRES_PASSWORD: postgres"], ["+", null, 144, "          POSTGRES_DB: promptvault_test"], ["+", null, 145, "        ports:"], ["+", null, 146, "          - 5432:5432"], ["+", null, 147, "        options: >-"], ["+", null, 148, "          --health-cmd \"pg_isready -U postgres -d promptvault_test\""], ["+", null, 149, "          --health-interval 5s"], ["+", null, 150, "          --health-timeout 5s"], ["+", null, 151, "          --health-retries 10"], ["+", null, 152, "    env:"], ["+", null, 153, "      # The database name must contain \"test\": make test-postgres resets its schema."], ["+", null, 154, "      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptvault_test"], ["+", null, 155, "    steps:"], ["+", null, 156, "      - name: Checkout"], ["+", null, 157, "        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"], ["+", null, 158, ""], ["+", null, 159, "      - name: Setup Python"], ["+", null, 160, "        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0"], ["+", null, 161, "        with:"], ["+", null, 162, "          python-version: '3.14'"], ["+", null, 163, "          cache: pip"], ["+", null, 164, "          cache-dependency-path: pyproject.toml"], ["+", null, 165, ""], ["+", null, 166, "      - name: Install backend dependencies"], ["+", null, 167, "        run: make install-backend"], ["+", null, 168, ""], ["+", null, 169, "      - name: Generate JWT keys (secrets/ is not versioned)"], ["+", null, 170, "        run: .venv/bin/python scripts/generate_jwt_keys.py"], ["+", null, 171, ""], ["+", null, 172, "      - name: Check pg_dump and psql are available (backup round-trip test needs them)"], ["+", null, 173, "        run: pg_dump --version && psql --version"], ["+", null, 174, ""], ["+", null, 175, "      - name: Test PostgreSQL legs"], ["+", null, 176, "        run: make test-postgres"]]}], "additions": 47, "deletions": 0, "truncated": false, "category": "ci", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-b803fcb7f17ed9235f1e5cb1fcd2f5d3b2838429d4368ae4c57ce4436577f03f", "read_minutes": 1.2}, {"path": "Makefile", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 33, "old_lines": 6, "new_start": 33, "new_lines": 11, "context": "BACKEND_PORT     ?= 7870", "lines": [[" ", 33, 33, "FRONTEND_PORT    ?= 7873"], [" ", 34, 34, "PYTEST           := $(PYTHON) -m pytest"], [" ", 35, 35, "BACKEND_TEST_CMD  = $(PYTEST)"], ["+", null, 36, "# Test files with a PostgreSQL leg (skipped unless DATABASE_URL is a PostgreSQL URL)."], ["+", null, 37, "PG_TEST_FILES    := tests/test_fts_search.py tests/test_fts_snippet.py tests/test_fts_migration.py \\"], ["+", null, 38, "                    tests/test_migration_prompt_legacy_public.py tests/test_migration_prompt_shares.py \\"], ["+", null, 39, "                    tests/test_backup_full_roundtrip.py tests/integration/test_skill_search.py \\"], ["+", null, 40, "                    tests/integration/test_skill_migration.py tests/integration/test_skill_backup_roundtrip.py"], [" ", 36, 41, "FRONTEND_TEST_CMD = npm run test:unit:coverage"], [" ", 37, 42, "COMPOSE          := docker compose"], [" ", 38, 43, ""]]}, {"old_start": 43, "old_lines": 7, "new_start": 48, "new_lines": 7, "context": "COMPOSE          := docker compose", "lines": [[" ", 43, 48, "        check-runtime check-deps \\"], [" ", 44, 49, "        install install-backend install-frontend \\"], [" ", 45, 50, "        dev \\"], ["-", 46, null, "        test test-backend test-frontend \\"], ["+", null, 51, "        test test-backend test-postgres test-frontend \\"], [" ", 47, 52, "        lint lint-backend lint-frontend lint-fix check-file-sizes check-sw-cache-version \\"], [" ", 48, 53, "        build build-frontend build-image \\"], [" ", 49, 54, "        release-prepare release-prepare-dry-run release release-dry-run \\"]]}, {"old_start": 164, "old_lines": 6, "new_start": 169, "new_lines": 14, "context": "test-backend: ## Run backend test suite with coverage (python3 -m pytest)", "lines": [[" ", 164, 169, "test-frontend: ## Run frontend test suite with coverage (vitest)"], [" ", 165, 170, "\t$(FRONTEND_TEST_CMD)"], [" ", 166, 171, ""], ["+", null, 172, "test-postgres: ## Run the PostgreSQL legs of the backend tests (DATABASE_URL=postgresql://...test-db, resets its schema)"], ["+", null, 173, "\t@test -n \"$$DATABASE_URL\" || { echo \"Set DATABASE_URL to a PostgreSQL test database (its name must contain 'test').\"; exit 1; }"], ["+", null, 174, "\t@for f in $(PG_TEST_FILES); do \\"], ["+", null, 175, "\t  $(PYTHON) scripts/reset_test_postgres.py || exit 1; \\"], ["+", null, 176, "\t  echo \"== $$f\"; \\"], ["+", null, 177, "\t  $(PYTEST) $$f -q --no-cov -p no:cacheprovider || exit 1; \\"], ["+", null, 178, "\tdone"], ["+", null, 179, ""], [" ", 167, 180, "test: ## Run all test suites (backend + frontend) with coverage gates"], [" ", 168, 181, "\t@echo \"=== Running full test suite ===\""], [" ", 169, 182, "\t@_fail=0; \\"]]}], "additions": 14, "deletions": 1, "truncated": false, "category": "config", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-76ed074a9305c04054cdebb9e9aad2d818052b07091de1f20cad0bbac34ffb52", "read_minutes": 0.4}, {"path": "docs/CHANGELOG.md", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 12, "old_lines": 6, "new_start": 12, "new_lines": 11, "context": "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0", "lines": [[" ", 12, 12, "- **PyJWT upgraded to 2.15.1** (from 2.13.0). A token with deeply nested JSON in its header or payload made PyJWT raise an uncaught `RecursionError`, so `/api/auth/refresh`, `/api/auth/logout` and the 2FA challenge exchange answered an unauthenticated request with a server error instead of a 401 (GHSA-8wjv-2p76-3863, GHSA-42vr-xj54-vc7v). The other PyJWT advisories fixed in these releases concern HMAC keys, `PyJWK` and `PyJWKClient`, which PromptVault does not use (it only accepts ES256 tokens)."], [" ", 13, 13, "- **Tokens sent in a request body are capped at 4096 characters** on those three endpoints, so oversized input is rejected with a 422 before it reaches the token parser."], [" ", 14, 14, ""], ["+", null, 15, "### Changed"], ["+", null, 16, ""], ["+", null, 17, "- **PostgreSQL driver moved from psycopg2 to psycopg v3** (#127): the image now installs `psycopg[binary]`, SQLAlchemy's default driver since 2.1. A `DATABASE_URL` that says `postgresql://` or the older `postgresql+psycopg2://` keeps working unchanged; both are loaded with psycopg v3. SQLite is unaffected."], ["+", null, 18, "- **CI now runs the PostgreSQL tests** against a real `postgres:15` server (`test-postgres` job, `make test-postgres`): full-text search, the migrations and the `pg_dump`/`psql` backup round trip, which previously only ran on SQLite. This is the check that would have caught #126."], ["+", null, 19, ""], [" ", 15, 20, "### Fixed"], [" ", 16, 21, ""], [" ", 17, 22, "- **PostgreSQL deployments crashed at startup with `No module named 'psycopg'`** (#126): since the SQLAlchemy 2.1 upgrade (#86) a plain `postgresql://` URL loads the psycopg v3 driver, but PromptVault ships psycopg2. The web server, Alembic and the backup job store now pin a bare `postgresql://` URL to `postgresql+psycopg2://`; a URL that names a driver is used as written. `pg_dump` and `psql` still receive a plain `postgresql://` URI, so backups keep working with either form. No change to `DATABASE_URL` is needed. SQLite is unaffected. Moving to psycopg v3 is tracked in #127."]]}], "additions": 5, "deletions": 0, "truncated": false, "category": "docs", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-2bfab3db5cc1baf4c6d3ff6b19901926e3bdf4411ec685dac973e5fcff1c723b", "read_minutes": 0.1}, {"path": "docs/TESTING.md", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 710, "old_lines": 7, "new_start": 710, "new_lines": 7, "context": "Skills have their own suites. Archives are built in memory by `tests/fixtures/sk", "lines": [[" ", 710, 710, ""], [" ", 711, 711, "Optional legs, each skipped with a reason when its prerequisite is missing:"], [" ", 712, 712, ""], ["-", 713, null, "- **PostgreSQL**: set `TEST_DATABASE_URL` (or `DATABASE_URL`) to a throwaway PostgreSQL database, never a database you care about. The migration, full-text search and `pg_dump` round-trip tests then run against it. `pg_dump` and `psql` must be on `PATH` for the backup test."], ["+", null, 713, "- **PostgreSQL**: set `TEST_DATABASE_URL` (or `DATABASE_URL`) to a throwaway PostgreSQL database, never a database you care about. The migration, full-text search and `pg_dump` round-trip tests then run against it. `pg_dump` and `psql` must be on `PATH` for the backup test. `make test-postgres` runs every file with a PostgreSQL leg, one file at a time, resetting the database between files because the migration tests leave tables behind. It drops and recreates the `public` schema, so it refuses to run unless the database name contains `test` (for example `postgresql://postgres:pw@localhost:5432/promptvault_test`). CI runs it in the `test-postgres` job against a `postgres:15` service."], [" ", 714, 714, "- **Reference validator (SC-008)**: install the Agent Skills `skills-ref` tool and put it on `PATH`. `tests/unit/test_skill_archive_writer.py` then checks that an exported, warning-free archive passes `skills-ref validate`."], [" ", 715, 715, "- **Reference corpus (SC-004)**: `tests/integration/test_skill_reference_corpus.py` is marked `network`. It downloads a pinned snapshot of `anthropics/skills` (see `tests/fixtures/skills/reference_corpus.json`) into the git-ignored `.cache/skill-corpus/` and skips when offline. Deselect it with `-m \"not network\"`."], [" ", 716, 716, "- **Anonymous mode**: `AUTH_ENABLED=false python3 -m pytest --no-cov tests/integration/test_skills_auth_modes.py` runs the tests that need auth turned off."]]}], "additions": 1, "deletions": 1, "truncated": false, "category": "docs", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-63e3617f53c4cb117c1586d6d639e52d8541a37b0f41ca1bae6f9422e0036270", "read_minutes": 0.0}, {"path": "pyproject.toml", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 31, "old_lines": 7, "new_start": 31, "new_lines": 7, "context": "dependencies = [", "lines": [[" ", 31, 31, "  \"python-multipart>=0.0.34\","], [" ", 32, 32, "  \"sqlalchemy>=2.1.9,<2.2\","], [" ", 33, 33, "  \"alembic>=1.20.1\","], ["-", 34, null, "  \"psycopg2-binary>=2.9.13\","], ["+", null, 34, "  \"psycopg[binary]>=3.3.0\","], [" ", 35, 35, "  \"pydantic>=2.14.3\","], [" ", 36, 36, "  \"pydantic-settings>=2.16.3\","], [" ", 37, 37, "  \"argon2-cffi>=23.1.0\","]]}], "additions": 1, "deletions": 1, "truncated": false, "category": "config", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-50c86b7ed8ac2cf95bd48334961bf0530cdc77b5a56f852c5c61b89d735fd711", "read_minutes": 0.1}, {"path": "scripts/reset_test_postgres.py", "old_path": null, "status": "added", "binary": false, "hunks": [{"old_start": 0, "old_lines": 0, "new_start": 1, "new_lines": 49, "context": "", "lines": [["+", null, 1, "#!/usr/bin/env python3"], ["+", null, 2, "# This Source Code Form is subject to the terms of the Mozilla Public"], ["+", null, 3, "# License, v. 2.0. If a copy of the MPL was not distributed with this"], ["+", null, 4, "# file, You can obtain one at https://mozilla.org/MPL/2.0/."], ["+", null, 5, ""], ["+", null, 6, "\"\"\"Reset the ``public`` schema of a *test* PostgreSQL database."], ["+", null, 7, ""], ["+", null, 8, "``make test-postgres`` runs each PostgreSQL test file against the same database"], ["+", null, 9, "and calls this script between files, because the migration tests leave tables"], ["+", null, 10, "behind that break the next file's fixtures."], ["+", null, 11, ""], ["+", null, 12, "This is destructive, so it refuses to run unless the database name in"], ["+", null, 13, "``DATABASE_URL`` contains ``test``."], ["+", null, 14, "\"\"\""], ["+", null, 15, ""], ["+", null, 16, "import os"], ["+", null, 17, "import sys"], ["+", null, 18, ""], ["+", null, 19, "from sqlalchemy import create_engine, text"], ["+", null, 20, "from sqlalchemy.engine import make_url"], ["+", null, 21, ""], ["+", null, 22, "from src.db.config import DatabaseSettings"], ["+", null, 23, ""], ["+", null, 24, ""], ["+", null, 25, "def main() -> int:"], ["+", null, 26, "    raw_url = os.environ.get(\"DATABASE_URL\", \"\")"], ["+", null, 27, "    if not raw_url.startswith(\"postgresql\"):"], ["+", null, 28, "        print(\"DATABASE_URL must be a postgresql:// URL.\", file=sys.stderr)"], ["+", null, 29, "        return 2"], ["+", null, 30, ""], ["+", null, 31, "    settings = DatabaseSettings(DATABASE_URL=raw_url)"], ["+", null, 32, "    url = make_url(settings.sqlalchemy_url)"], ["+", null, 33, "    if \"test\" not in (url.database or \"\").lower():"], ["+", null, 34, "        print("], ["+", null, 35, "            f\"Refusing to reset database '{url.database}': its name must contain 'test'.\","], ["+", null, 36, "            file=sys.stderr,"], ["+", null, 37, "        )"], ["+", null, 38, "        return 2"], ["+", null, 39, ""], ["+", null, 40, "    engine = create_engine(url, isolation_level=\"AUTOCOMMIT\")"], ["+", null, 41, "    with engine.connect() as conn:"], ["+", null, 42, "        conn.execute(text(\"DROP SCHEMA public CASCADE\"))"], ["+", null, 43, "        conn.execute(text(\"CREATE SCHEMA public\"))"], ["+", null, 44, "    engine.dispose()"], ["+", null, 45, "    return 0"], ["+", null, 46, ""], ["+", null, 47, ""], ["+", null, 48, "if __name__ == \"__main__\":"], ["+", null, 49, "    raise SystemExit(main())"]]}], "additions": 49, "deletions": 0, "truncated": false, "category": "source", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-6d3f695682008dbe437c5ee6a87f0d0f4e5730cff146d0c108ee648c317bf534", "read_minutes": 2.5}, {"path": "src/db/config.py", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 25, "old_lines": 8, "new_start": 25, "new_lines": 10, "context": "", "lines": [[" ", 25, 25, ""], [" ", 26, 26, "from pydantic_settings import BaseSettings, SettingsConfigDict"], [" ", 27, 27, ""], ["-", 28, null, "_BARE_POSTGRESQL_PREFIX = \"postgresql://\""], ["-", 29, null, "_PSYCOPG2_PREFIX = \"postgresql+psycopg2://\""], ["+", null, 28, "_PSYCOPG_PREFIX = \"postgresql+psycopg://\""], ["+", null, 29, "# Matches a bare ``postgresql://`` and the legacy ``postgresql+psycopg2://``"], ["+", null, 30, "# (psycopg2 is no longer installed), capturing nothing; the rest of the URL is kept."], ["+", null, 31, "_PSYCOPG_REWRITE_RE = re.compile(r\"^postgresql(\\+psycopg2)?://\")"], [" ", 30, 32, "_DRIVER_SUFFIX_RE = re.compile(r\"^postgresql\\+\\w+://\")"], [" ", 31, 33, ""], [" ", 32, 34, ""]]}, {"old_start": 73, "old_lines": 13, "new_start": 75, "new_lines": 16, "context": "def is_postgresql(self) -> bool:", "lines": [[" ", 73, 75, "    def sqlalchemy_url(self) -> str:"], [" ", 74, 76, "        \"\"\"DATABASE_URL as SQLAlchemy should load it."], [" ", 75, 77, ""], ["-", 76, null, "        SQLAlchemy 2.1 resolves a bare ``postgresql://`` URL to the psycopg v3"], ["-", 77, null, "        dialect, but the project ships ``psycopg2-binary``. A bare PostgreSQL"], ["-", 78, null, "        URL is therefore pinned to ``postgresql+psycopg2://``. A URL that"], ["-", 79, null, "        already names a driver is returned unchanged."], ["+", null, 78, "        PromptVault ships psycopg v3. A bare ``postgresql://`` URL is made"], ["+", null, 79, "        explicit as ``postgresql+psycopg://`` (so it does not depend on"], ["+", null, 80, "        SQLAlchemy's default driver), and the legacy ``postgresql+psycopg2://``"], ["+", null, 81, "        form found in existing ``.env`` files is mapped to it too. Any other"], ["+", null, 82, "        URL, including one that names another installed driver, is returned"], ["+", null, 83, "        unchanged."], [" ", 80, 84, "        \"\"\""], ["-", 81, null, "        if self.DATABASE_URL.startswith(_BARE_POSTGRESQL_PREFIX):"], ["-", 82, null, "            return _PSYCOPG2_PREFIX + self.DATABASE_URL[len(_BARE_POSTGRESQL_PREFIX) :]"], ["+", null, 85, "        match = _PSYCOPG_REWRITE_RE.match(self.DATABASE_URL)"], ["+", null, 86, "        if match:"], ["+", null, 87, "            return _PSYCOPG_PREFIX + self.DATABASE_URL[match.end() :]"], [" ", 83, 88, "        return self.DATABASE_URL"], [" ", 84, 89, ""], [" ", 85, 90, "    @property"]]}], "additions": 13, "deletions": 8, "truncated": false, "category": "source", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-bd4188aef81f37e4b65999e841170adb85ba220813911333afccaf286662b36c", "read_minutes": 1.1}, {"path": "tests/test_db_url_driver.py", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 2, "old_lines": 11, "new_start": 2, "new_lines": 11, "context": "", "lines": [[" ", 2, 2, "# License, v. 2.0. If a copy of the MPL was not distributed with this"], [" ", 3, 3, "# file, You can obtain one at https://mozilla.org/MPL/2.0/."], [" ", 4, 4, ""], ["-", 5, null, "\"\"\"Regression tests for the PostgreSQL driver selection (see issue #126)."], ["+", null, 5, "\"\"\"Tests for the PostgreSQL driver selection (issues #126, #127)."], [" ", 6, 6, ""], ["-", 7, null, "SQLAlchemy 2.1 resolves a bare ``postgresql://`` URL to the psycopg v3 dialect,"], ["-", 8, null, "but the project ships psycopg2. ``DatabaseSettings.sqlalchemy_url`` pins the"], ["-", 9, null, "driver; ``libpq_url`` strips it again for ``pg_dump``/``psql``."], ["+", null, 7, "PromptVault ships psycopg v3. ``DatabaseSettings.sqlalchemy_url`` makes the"], ["+", null, 8, "driver explicit (and maps the legacy ``+psycopg2`` form), while ``libpq_url``"], ["+", null, 9, "strips it again for ``pg_dump``/``psql``."], [" ", 10, 10, "\"\"\""], [" ", 11, 11, ""], [" ", 12, 12, "from unittest.mock import MagicMock, patch"]]}, {"old_start": 23, "old_lines": 27, "new_start": 23, "new_lines": 33, "context": "def _settings(url: str) -> DatabaseSettings:", "lines": [[" ", 23, 23, ""], [" ", 24, 24, ""], [" ", 25, 25, "class TestSqlalchemyUrl:"], ["-", 26, null, "    def test_bare_postgresql_resolves_to_psycopg2(self):"], ["+", null, 26, "    def test_bare_postgresql_resolves_to_psycopg3(self):"], [" ", 27, 27, "        url = _settings(\"postgresql://u:p@db:5432/pv\").sqlalchemy_url"], [" ", 28, 28, ""], ["-", 29, null, "        assert url == \"postgresql+psycopg2://u:p@db:5432/pv\""], ["-", 30, null, "        assert make_url(url).get_dialect().driver == \"psycopg2\""], ["+", null, 29, "        assert url == \"postgresql+psycopg://u:p@db:5432/pv\""], ["+", null, 30, "        assert make_url(url).get_dialect().driver == \"psycopg\""], [" ", 31, 31, ""], ["-", 32, null, "    def test_bare_url_without_pin_would_pick_psycopg3(self):"], ["-", 33, null, "        \"\"\"Documents the SQLAlchemy 2.1 behaviour the pin protects against.\"\"\""], ["-", 34, null, "        assert make_url(\"postgresql://u:p@h/d\").get_dialect().driver == \"psycopg\""], ["+", null, 32, "    def test_legacy_psycopg2_url_is_mapped_to_psycopg3(self):"], ["+", null, 33, "        \"\"\"Existing .env files that say +psycopg2 keep working (psycopg2 is gone).\"\"\""], ["+", null, 34, "        url = _settings(\"postgresql+psycopg2://u:p@db/pv\").sqlalchemy_url"], ["+", null, 35, ""], ["+", null, 36, "        assert url == \"postgresql+psycopg://u:p@db/pv\""], ["+", null, 37, ""], ["+", null, 38, "    def test_driver_is_importable(self):"], ["+", null, 39, "        \"\"\"The resolved dialect's DBAPI is installed (the #126 failure mode).\"\"\""], ["+", null, 40, "        dialect = make_url(_settings(\"postgresql://u:p@h/d\").sqlalchemy_url)"], ["+", null, 41, "        assert dialect.get_dialect().import_dbapi().__name__ == \"psycopg\""], [" ", 35, 42, ""], [" ", 36, 43, "    @pytest.mark.parametrize("], [" ", 37, 44, "        \"url\","], [" ", 38, 45, "        ["], ["-", 39, null, "            \"postgresql+psycopg2://u:p@db/pv\","], [" ", 40, 46, "            \"postgresql+psycopg://u:p@db/pv\","], [" ", 41, 47, "            \"postgresql+asyncpg://u:p@db/pv\","], [" ", 42, 48, "            \"sqlite:///./data/promptvault.db\","], [" ", 43, 49, "            \"sqlite:///:memory:\","], [" ", 44, 50, "        ],"], [" ", 45, 51, "    )"], ["-", 46, null, "    def test_explicit_driver_and_sqlite_unchanged(self, url):"], ["+", null, 52, "    def test_other_urls_unchanged(self, url):"], [" ", 47, 53, "        assert _settings(url).sqlalchemy_url == url"], [" ", 48, 54, ""], [" ", 49, 55, "    def test_database_url_itself_is_not_rewritten(self):"]]}, {"old_start": 52, "old_lines": 10, "new_start": 58, "new_lines": 10, "context": "def test_database_url_itself_is_not_rewritten(self):", "lines": [[" ", 52, 58, "        assert settings.DATABASE_URL == \"postgresql://u:p@db/pv\""], [" ", 53, 59, "        assert settings.is_postgresql"], [" ", 54, 60, ""], ["-", 55, null, "    def test_password_containing_postgresql_scheme_text_is_preserved(self):"], ["+", null, 61, "    def test_password_containing_scheme_text_is_preserved(self):"], [" ", 56, 62, "        url = _settings(\"postgresql://u:postgresql%3A%2F%2F@db/pv\").sqlalchemy_url"], [" ", 57, 63, ""], ["-", 58, null, "        assert url == \"postgresql+psycopg2://u:postgresql%3A%2F%2F@db/pv\""], ["+", null, 64, "        assert url == \"postgresql+psycopg://u:postgresql%3A%2F%2F@db/pv\""], [" ", 59, 65, ""], [" ", 60, 66, ""], [" ", 61, 67, "class TestLibpqUrl:"]]}, {"old_start": 74, "old_lines": 7, "new_start": 80, "new_lines": 7, "context": "def test_driver_suffix_removed(self, url, expected):", "lines": [[" ", 74, 80, ""], [" ", 75, 81, "class TestDumpStrategyUsesLibpqUrl:"], [" ", 76, 82, "    def _run(self, method, *args):"], ["-", 77, null, "        settings = _settings(\"postgresql+psycopg2://u:p@db/pv\")"], ["+", null, 83, "        settings = _settings(\"postgresql+psycopg://u:p@db/pv\")"], [" ", 78, 84, "        with ("], [" ", 79, 85, "            patch(\"src.services.backup_dump_strategy.db_settings\", settings),"], [" ", 80, 86, "            patch("]]}], "additions": 21, "deletions": 15, "truncated": false, "category": "test", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-a39071c35589ef1f7bdf6473a80622f940dc296a9e68f183541d8e48655572c0", "read_minutes": 1.2}, {"path": "tests/test_migration_prompt_legacy_public.py", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 53, "old_lines": 11, "new_start": 53, "new_lines": 11, "context": "def _insert_prompt(engine, title: str) -> int:", "lines": [[" ", 53, 53, "        result = conn.execute("], [" ", 54, 54, "            sa.text("], [" ", 55, 55, "                \"INSERT INTO prompts (title, prompt, favorite, user_id) \""], ["-", 56, null, "                \"VALUES (:title, 'content', false, :user_id)\""], ["+", null, 56, "                \"VALUES (:title, 'content', false, :user_id) RETURNING id\""], [" ", 57, 57, "            ),"], [" ", 58, 58, "            {\"title\": title, \"user_id\": user_id},"], [" ", 59, 59, "        )"], ["-", 60, null, "        return result.lastrowid if result.lastrowid else None"], ["+", null, 60, "        return int(result.scalar_one())"], [" ", 61, 61, ""], [" ", 62, 62, ""], [" ", 63, 63, "def _get_legacy_public(engine, title: str):"]]}], "additions": 2, "deletions": 2, "truncated": false, "category": "test", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-394b952cc3c688272ac0c76459b0f8b11e8523de4bfefdc1588fc11c42f98983", "read_minutes": 0.1}, {"path": "uv.lock", "old_path": null, "status": "modified", "binary": false, "hunks": [{"old_start": 1, "old_lines": 5, "new_start": 1, "new_lines": 5, "context": "", "lines": [[" ", 1, 1, "version = 1"], ["-", 2, null, "revision = 3"], ["+", null, 2, "revision = 5"], [" ", 3, 3, "requires-python = \">=3.14\""], [" ", 4, 4, "resolution-markers = ["], [" ", 5, 5, "    \"python_full_version >= '3.15'\","]]}, {"old_start": 852, "old_lines": 7, "new_start": 852, "new_lines": 7, "context": "dependencies = [", "lines": [[" ", 852, 852, "    { name = \"jinja2\" },"], [" ", 853, 853, "    { name = \"markdown-it-py\" },"], [" ", 854, 854, "    { name = \"nh3\" },"], ["-", 855, null, "    { name = \"psycopg2-binary\" },"], ["+", null, 855, "    { name = \"psycopg\", extra = [\"binary\"] },"], [" ", 856, 856, "    { name = \"pydantic\" },"], [" ", 857, 857, "    { name = \"pydantic-settings\" },"], [" ", 858, 858, "    { name = \"pyjwt\" },"]]}, {"old_start": 902, "old_lines": 7, "new_start": 902, "new_lines": 7, "context": "requires-dist = [", "lines": [[" ", 902, 902, "    { name = \"markdown-it-py\", specifier = \">=4.3.0\" },"], [" ", 903, 903, "    { name = \"mypy\", marker = \"extra == 'dev'\", specifier = \">=2.4.1\" },"], [" ", 904, 904, "    { name = \"nh3\", specifier = \">=0.3.8\" },"], ["-", 905, null, "    { name = \"psycopg2-binary\", specifier = \">=2.9.13\" },"], ["+", null, 905, "    { name = \"psycopg\", extras = [\"binary\"], specifier = \">=3.3.0\" },"], [" ", 906, 906, "    { name = \"pydantic\", specifier = \">=2.14.3\" },"], [" ", 907, 907, "    { name = \"pydantic-settings\", specifier = \">=2.16.3\" },"], [" ", 908, 908, "    { name = \"pyjwt\", specifier = \">=2.15.1\" },"]]}, {"old_start": 924, "old_lines": 33, "new_start": 924, "new_lines": 49, "context": "requires-dist = [", "lines": [[" ", 924, 924, "provides-extras = [\"test\", \"dev\", \"setup\"]"], [" ", 925, 925, ""], [" ", 926, 926, "[[package]]"], ["-", 927, null, "name = \"psycopg2-binary\""], ["-", 928, null, "version = \"2.9.13\""], ["-", 929, null, "source = { registry = \"https://pypi.org/simple\" }"], ["-", 930, null, "sdist = { url = \"https://files.pythonhosted.org/packages/ed/76/7b4383014be0fcc6c1c0e24292845a14e1672cf17fca62ca0a2bd5f4563d/psycopg2_binary-2.9.13.tar.gz\", hash = \"sha256:e324ecf60f952d21dd11413b8bbed0951bbd99579a06fd06f28bfc37737cd373\", size = 378112, upload-time = \"2026-09-10T00:06:12.199Z\" }"], ["-", 931, null, "wheels = ["], ["-", 932, null, "    { url = \"https://files.pythonhosted.org/packages/5f/32/897c074cb99fbdda7d34b0a2546097a59162bb3d04c0d546ae4ec82345e3/psycopg2_binary-2.9.13-cp314-cp314-macosx_10_15_x86_64.whl\", hash = \"sha256:2ca263643ae37998ae04d18e431df34d0d61f12b47640dab585f14b6dbe00798\", size = 3725788, upload-time = \"2026-09-09T23:55:39.04Z\" },"], ["-", 933, null, "    { url = \"https://files.pythonhosted.org/packages/0f/f4/e3a789de34c9ac25d20b25c2be583da16394a2ba0926da1c863653831f41/psycopg2_binary-2.9.13-cp314-cp314-macosx_11_0_arm64.whl\", hash = \"sha256:4c0214c7da18a28d108aa7108c8a3cca8035c7911ec97ef9ec0827569c9a2720\", size = 3818111, upload-time = \"2026-09-09T23:55:40.979Z\" },"], ["-", 934, null, "    { url = \"https://files.pythonhosted.org/packages/72/29/647724c43ac510dbc59b80e20e85d439deb94f5d5a024153c32330fa041d/psycopg2_binary-2.9.13-cp314-cp314-manylinux2014_ppc64le.manylinux_2_17_ppc64le.whl\", hash = \"sha256:5d89e064bb12b40cad696cf4975e6da86f8c60f14cd06cb6c1bc0a7f5d01761f\", size = 4586235, upload-time = \"2026-09-09T23:55:43.012Z\" },"], ["-", 935, null, "    { url = \"https://files.pythonhosted.org/packages/91/ad/7f52f92cc65c23778daff7eec4ee2099236694a0a4723a5f180d0708b607/psycopg2_binary-2.9.13-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl\", hash = \"sha256:190c18b97d9ef72f2e88c451b6588af90d6bd7bf54cb94b963280dc86a2c7076\", size = 4282424, upload-time = \"2026-09-09T23:55:44.843Z\" },"], ["-", 936, null, "    { url = \"https://files.pythonhosted.org/packages/3d/2a/1a472059b198942d99651656e2bc610575584478bfe68d297ecabbd4887f/psycopg2_binary-2.9.13-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:c00ebe9a2f31151aade0db233dc1446513a95e92c39ce055ee097af0ae86be1c\", size = 5902365, upload-time = \"2026-09-09T23:55:46.619Z\" },"], ["-", 937, null, "    { url = \"https://files.pythonhosted.org/packages/91/1a/171ea5dac7b3a0fa57b3cb59c2ad6d7b8bc60732368fecfd2ed1f1288392/psycopg2_binary-2.9.13-cp314-cp314-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl\", hash = \"sha256:5085f7ff7b1e890f279577cedeb8c628957869a340fa34a39f7f406500b3c916\", size = 4119938, upload-time = \"2026-09-09T23:55:49.381Z\" },"], ["-", 938, null, "    { url = \"https://files.pythonhosted.org/packages/41/ce/3c6d4ad71853a59eee6a575fe36df4bb40752a9735a27bd62af66b454ed5/psycopg2_binary-2.9.13-cp314-cp314-musllinux_1_2_aarch64.whl\", hash = \"sha256:4e55357d1943673d491bbabb171c891704fc6a22441fea539e05a5c27a79ea3c\", size = 3661557, upload-time = \"2026-09-09T23:55:51.269Z\" },"], ["-", 939, null, "    { url = \"https://files.pythonhosted.org/packages/10/a3/1819a01bf951eab2afb5ca2a3d11f50500bf536fecff088154372a8d1985/psycopg2_binary-2.9.13-cp314-cp314-musllinux_1_2_ppc64le.whl\", hash = \"sha256:3e60b06ec7f9dc3e5f1106d12706514b6d6b92c3dc438fcdf4e43e65cc660d1b\", size = 3307770, upload-time = \"2026-09-09T23:55:53.196Z\" },"], ["-", 940, null, "    { url = \"https://files.pythonhosted.org/packages/4e/df/22f4aec952cd5b2dd02f438399583ed69f7d04b90e7c31659d9571bbe188/psycopg2_binary-2.9.13-cp314-cp314-musllinux_1_2_riscv64.whl\", hash = \"sha256:dde942b46ce20f6c4464cdf551f3293207f803f4e4354454eb1f5599c3eb1fa1\", size = 3052935, upload-time = \"2026-09-09T23:55:55.117Z\" },"], ["-", 941, null, "    { url = \"https://files.pythonhosted.org/packages/95/42/aab651bc22bafa961806ca3b21027bb0739a2730b0e6f7f0778baeb95e67/psycopg2_binary-2.9.13-cp314-cp314-musllinux_1_2_x86_64.whl\", hash = \"sha256:215777c62ce81c3b487cefdb6a41969944eb982309f91349ff3ca0323d6f17ed\", size = 3355387, upload-time = \"2026-09-09T23:55:57.366Z\" },"], ["-", 942, null, "    { url = \"https://files.pythonhosted.org/packages/bc/af/3b8220633eaf955e95ea7be67d76e81a0d1cd3c76362ea504b91ffa079db/psycopg2_binary-2.9.13-cp314-cp314-win_amd64.whl\", hash = \"sha256:f3088eb80f58ed933c62d87128741d31e786edc862e23266d3c286763d646de0\", size = 2863890, upload-time = \"2026-09-09T23:55:59.056Z\" },"], ["-", 943, null, "    { url = \"https://files.pythonhosted.org/packages/6e/f1/377d17fc8425220d17552691cd2b97aa232da92173f5dead71278b83f8ab/psycopg2_binary-2.9.13-cp315-cp315-macosx_10_15_x86_64.whl\", hash = \"sha256:38397def2d794ffde9db80f63d6820253e61b17483112652a318355f51a56f50\", size = 3725913, upload-time = \"2026-09-09T23:56:00.736Z\" },"], ["-", 944, null, "    { url = \"https://files.pythonhosted.org/packages/67/64/27208e67cd6e663f69bf7bf905cf69db066a015c90ac9ca948a56a8e9d78/psycopg2_binary-2.9.13-cp315-cp315-macosx_11_0_arm64.whl\", hash = \"sha256:dff5c70ed9789ccb0d97ff4a7da51dc523a255c4ec95df188fa5d44adcae4ea8\", size = 3818303, upload-time = \"2026-09-09T23:56:02.551Z\" },"], ["-", 945, null, "    { url = \"https://files.pythonhosted.org/packages/6b/98/67d2f34a1d18367b5f655bdd101759f8474286c74ffe701b7d6e3abd7fda/psycopg2_binary-2.9.13-cp315-cp315-manylinux2014_ppc64le.manylinux_2_17_ppc64le.whl\", hash = \"sha256:08d3b81a6a91775c937abf97d4c58fc9142e8e35fb91c387d24f81d15c98e6cf\", size = 4586508, upload-time = \"2026-09-09T23:56:04.706Z\" },"], ["-", 946, null, "    { url = \"https://files.pythonhosted.org/packages/bb/47/46c227deaf322dceafa0b7b321b4e5de9cc797014b7a353349b2e09b1118/psycopg2_binary-2.9.13-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.whl\", hash = \"sha256:541a487a9ccd72b5e38f37f27b0ce78cb7eb3e336e7b5277d45463010c03a7a8\", size = 4282383, upload-time = \"2026-09-09T23:56:06.678Z\" },"], ["-", 947, null, "    { url = \"https://files.pythonhosted.org/packages/f4/3c/e8705ffa381160d842eaf06a8446e8416f1a2497dd70a7e62277f3be6e7a/psycopg2_binary-2.9.13-cp315-cp315-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:562fe2a43b30e781848dce63d9080c15414c777c96df348c4342558338cc7bf3\", size = 5902765, upload-time = \"2026-09-09T23:56:08.634Z\" },"], ["-", 948, null, "    { url = \"https://files.pythonhosted.org/packages/53/cc/359821c18317228b8032456a3740c98045b719ed003a594b9ebac9330b86/psycopg2_binary-2.9.13-cp315-cp315-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl\", hash = \"sha256:dddfe650e7dda464d676c27fbedb5061f1ad05e1604627f54c770d7f799d36e9\", size = 4122849, upload-time = \"2026-09-09T23:56:10.671Z\" },"], ["-", 949, null, "    { url = \"https://files.pythonhosted.org/packages/17/e5/4d935acb6d3258c7a767b3d527e54c0b537649101b55002a5dbcfe747e2a/psycopg2_binary-2.9.13-cp315-cp315-musllinux_1_2_aarch64.whl\", hash = \"sha256:4ff0f575cbb14f30445858dcfdd751e043486f5290915df78a9818bc74042eff\", size = 3662084, upload-time = \"2026-09-09T23:56:12.316Z\" },"], ["-", 950, null, "    { url = \"https://files.pythonhosted.org/packages/89/56/9e9bbc7c773c5de7bb25dd35d7f041c2a6f0fcfa9207a1ceaf01a1bc687c/psycopg2_binary-2.9.13-cp315-cp315-musllinux_1_2_ppc64le.whl\", hash = \"sha256:d79530b4c1af657d5620a1d21b8e39f2996aa06821d5564d05b22d6b8cd413d0\", size = 3308077, upload-time = \"2026-09-09T23:56:15.262Z\" },"], ["-", 951, null, "    { url = \"https://files.pythonhosted.org/packages/36/fa/ed742cd4e5dbddcb44702f9c4a97f7f5b62d97e3d9d00907ecc8ac750ef4/psycopg2_binary-2.9.13-cp315-cp315-musllinux_1_2_riscv64.whl\", hash = \"sha256:6ede8595767e19d30a7e8a84a7d47bfde6176d45d194fed08dbb68d1584a780b\", size = 3055143, upload-time = \"2026-09-09T23:56:17.168Z\" },"], ["-", 952, null, "    { url = \"https://files.pythonhosted.org/packages/d5/3a/5c2cb71a844ee236be2ce91b286d797e34a21489909357c7cfba0f5c0197/psycopg2_binary-2.9.13-cp315-cp315-musllinux_1_2_x86_64.whl\", hash = \"sha256:0ebcf3c4266a695df9d0ef51296155f60c86ac51cf82f0d0dd2e827255a891c5\", size = 3355374, upload-time = \"2026-09-09T23:56:18.793Z\" },"], ["-", 953, null, "    { url = \"https://files.pythonhosted.org/packages/e8/30/3991c9fdcca90a5a1e55435292f4d74d176da2be15f3998f6858da3658cc/psycopg2_binary-2.9.13-cp315-cp315-win_amd64.whl\", hash = \"sha256:1752b9821f1377404d65ac43af03d59a1eccc57fb2c1eb8305f9a3fe8eb7a8ba\", size = 2867246, upload-time = \"2026-09-09T23:56:20.501Z\" },"], ["+", null, 927, "name = \"psycopg\""], ["+", null, 928, "version = \"3.3.9\""], ["+", null, 929, "source = { registry = \"https://pypi.org/simple\" }"], ["+", null, 930, "dependencies = ["], ["+", null, 931, "    { name = \"tzdata\", marker = \"sys_platform == 'win32'\" },"], ["+", null, 932, "]"], ["+", null, 933, "sdist = { url = \"https://files.pythonhosted.org/packages/b4/74/ff710399dfa9fe9b546c2f5a05ea2f9b9d1dc2145c0b59e53a3fa2013679/psycopg-3.3.9.tar.gz\", hash = \"sha256:87c1d85c3e0e88e811d3c0b3808f947bd967c6faf34af6cd86fd021f77793d6c\", size = 171122, upload-time = \"2026-11-12T09:04:06.548Z\" }"], ["+", null, 934, "wheels = ["], ["+", null, 935, "    { url = \"https://files.pythonhosted.org/packages/52/5d/a7957d1b5484f8e5094a15b1a400929324f978b670bd4a95179e1a012ec2/psycopg-3.3.9-py3-none-any.whl\", hash = \"sha256:d2d7d04a1ce6dab4f5b27316bea3b52585cafa2f2d631e5b09dd69823f5c26f6\", size = 219041, upload-time = \"2026-11-12T08:58:18.454Z\" },"], ["+", null, 936, "]"], ["+", null, 937, ""], ["+", null, 938, "[package.optional-dependencies]"], ["+", null, 939, "binary = ["], ["+", null, 940, "    { name = \"psycopg-binary\", marker = \"implementation_name != 'pypy'\" },"], ["+", null, 941, "]"], ["+", null, 942, ""], ["+", null, 943, "[[package]]"], ["+", null, 944, "name = \"psycopg-binary\""], ["+", null, 945, "version = \"3.3.9\""], ["+", null, 946, "source = { registry = \"https://pypi.org/simple\" }"], ["+", null, 947, "wheels = ["], ["+", null, 948, "    { url = \"https://files.pythonhosted.org/packages/25/ef/2369abcb3d7789117bca1f028eeb69e2798237f5b6e5a7b4172eb113a380/psycopg_binary-3.3.9-cp314-cp314-macosx_10_15_x86_64.whl\", hash = \"sha256:6bc7e10d05f236f53b184d9592e8f3d22587bc2e7b964fea9f5d0de2b1142fe5\", size = 4055684, upload-time = \"2026-11-12T09:02:06.492Z\" },"], ["+", null, 949, "    { url = \"https://files.pythonhosted.org/packages/d3/22/3a2f68ce0e414a6e76f09987f447f155e2ef8b79d13ea6cf4aaa74c941a3/psycopg_binary-3.3.9-cp314-cp314-macosx_11_0_arm64.whl\", hash = \"sha256:e853041acf10de2dcb595167138dc9fc27de293d67caa1d80ed282ec27a28e87\", size = 4118288, upload-time = \"2026-11-12T09:02:10.849Z\" },"], ["+", null, 950, "    { url = \"https://files.pythonhosted.org/packages/af/1f/7e9e1f8c00e98fcf9d8be2d4d2120106100db5886cfce807c5d01523d64a/psycopg_binary-3.3.9-cp314-cp314-manylinux2014_ppc64le.manylinux_2_17_ppc64le.whl\", hash = \"sha256:c25fa1ee28f8fd73aecc5e8612ab9e5700682e8e23f9422437a1617016029934\", size = 4215854, upload-time = \"2026-11-12T09:02:15.024Z\" },"], ["+", null, 951, "    { url = \"https://files.pythonhosted.org/packages/2a/d5/ba4839c38d9d35daa815cb18dfe462582f783ba83b9d932692bb903fba01/psycopg_binary-3.3.9-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl\", hash = \"sha256:4992acd5a7479013d52615b8c23fdce9bc22f3cacbfb1007fa474e6b5ebe94c7\", size = 3918359, upload-time = \"2026-11-12T09:02:19.433Z\" },"], ["+", null, 952, "    { url = \"https://files.pythonhosted.org/packages/f1/47/243682e14cac97cb7500625a2ca3a53195ddc39e4bb81a59f289286f23d2/psycopg_binary-3.3.9-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:eed1ac135d652e4454777afb4e4bb52cf88520bbfa2f30ae83066cd4df656697\", size = 4140188, upload-time = \"2026-11-12T09:02:25.013Z\" },"], ["+", null, 953, "    { url = \"https://files.pythonhosted.org/packages/c5/4c/5b1a99f245c3a22bd3cca9760f0595e0bd26b4a7c0d5f36fe0288ddc3b2e/psycopg_binary-3.3.9-cp314-cp314-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl\", hash = \"sha256:85b3892dbc4f5fb21880f82e3aed7329be6bee39fb58a0f059cbb1d0a382e98b\", size = 3552025, upload-time = \"2026-11-12T09:02:32.354Z\" },"], ["+", null, 954, "    { url = \"https://files.pythonhosted.org/packages/c6/cc/32d34dd14d7215b987cb76ce72035963b85a9b4e75d3e3e78104abf7c831/psycopg_binary-3.3.9-cp314-cp314-musllinux_1_2_aarch64.whl\", hash = \"sha256:4ba688a9402e3cc9d425e6ad20f97b96698f59f867279c265c1d0ca6df9dad57\", size = 3907596, upload-time = \"2026-11-12T09:02:38.276Z\" },"], ["+", null, 955, "    { url = \"https://files.pythonhosted.org/packages/79/c4/ac9f35d331f987d83e5534f35d28f76aeac101eebaddc5c0c9f252a2d21f/psycopg_binary-3.3.9-cp314-cp314-musllinux_1_2_ppc64le.whl\", hash = \"sha256:300bd86d4b81d297e204a8ba223f54ec09a4b54fd069c32a74bf75b42860703f\", size = 3587344, upload-time = \"2026-11-12T09:02:41.864Z\" },"], ["+", null, 956, "    { url = \"https://files.pythonhosted.org/packages/54/04/e91fedeeab7fe94df2364ad324c0de0e6ebd54b24f3dff396e24ffba9655/psycopg_binary-3.3.9-cp314-cp314-musllinux_1_2_riscv64.whl\", hash = \"sha256:e01a4f4fd0e4beee23af30517123bdde838d53c3ac0ae594da019e36b3adabda\", size = 3314235, upload-time = \"2026-11-12T09:02:47.199Z\" },"], ["+", null, 957, "    { url = \"https://files.pythonhosted.org/packages/da/fc/e522309105d4c1b1f8bfa7e887355a414c1c84e94e32e532a6595c5ded13/psycopg_binary-3.3.9-cp314-cp314-musllinux_1_2_x86_64.whl\", hash = \"sha256:5117a4745b3b850872140d3a66a8d83c55801916ae6e3cf502af0a794f64f9b7\", size = 3626367, upload-time = \"2026-11-12T09:02:52.842Z\" },"], ["+", null, 958, "    { url = \"https://files.pythonhosted.org/packages/4e/50/643d5f523fa77a3b808e982716e7aa76da788218e40942721939c5e08c11/psycopg_binary-3.3.9-cp314-cp314-win_amd64.whl\", hash = \"sha256:109c5df5b0e5117e01a42d3b56a2f4ccd5431bd54d25efdfc89df095ac9f9605\", size = 3009572, upload-time = \"2026-11-12T09:02:58.474Z\" },"], ["+", null, 959, "    { url = \"https://files.pythonhosted.org/packages/c1/81/06d36165c60e32d3909bf9ad036f4120284872ad00234ac384be20fcef5f/psycopg_binary-3.3.9-cp315-cp315-macosx_10_15_x86_64.whl\", hash = \"sha256:0b513957b283d181ed04961567b9893cae79309e23655d54c91cb8781ad81fc5\", size = 4054822, upload-time = \"2026-11-12T09:03:04.391Z\" },"], ["+", null, 960, "    { url = \"https://files.pythonhosted.org/packages/4c/70/6c9eb0d0f1e124dbeba86dbd4c06b95bf15e7dfe60c0a3b91f6c7b45e237/psycopg_binary-3.3.9-cp315-cp315-macosx_11_0_arm64.whl\", hash = \"sha256:a9ee20e3b314c1f36ec13093f1ea46161704a7304a6c334396318d36416bd330\", size = 4117160, upload-time = \"2026-11-12T09:03:10.7Z\" },"], ["+", null, 961, "    { url = \"https://files.pythonhosted.org/packages/7f/84/99ecb47d6ef0752792b60b1fffd3739fae0605f4786aa9827646d1623f4b/psycopg_binary-3.3.9-cp315-cp315-manylinux2014_ppc64le.manylinux_2_17_ppc64le.whl\", hash = \"sha256:0793764fac48b5f0bf4d7154e38c60def4fa0cce16caa60b737f770bd29016ac\", size = 4214359, upload-time = \"2026-11-12T09:03:17.69Z\" },"], ["+", null, 962, "    { url = \"https://files.pythonhosted.org/packages/b0/32/2fbc8412c6d650886b201a0b1b2d522008d4a8858d885d2ca1b1f35df2d3/psycopg_binary-3.3.9-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.whl\", hash = \"sha256:e51c7c493f07b51be56875cfa8a7674824749fa1cda3515339ca64e628f1b992\", size = 3920287, upload-time = \"2026-11-12T09:03:24.19Z\" },"], ["+", null, 963, "    { url = \"https://files.pythonhosted.org/packages/cf/51/cc921a2ce634cbe8ebf3cb2b062d303d97afbf4ee941f8190003d867bea9/psycopg_binary-3.3.9-cp315-cp315-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:e5af7a6d4ca7781c03f9f628ef83ff739de8a7e7e0ffe4b6e7a8c274caea6f81\", size = 4141389, upload-time = \"2026-11-12T09:03:29.754Z\" },"], ["+", null, 964, "    { url = \"https://files.pythonhosted.org/packages/db/37/74fd196f755b979de8d2ad8d84f54afe0628036a8d88b63f7fd204e2f8fc/psycopg_binary-3.3.9-cp315-cp315-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl\", hash = \"sha256:e047c843fb5cd3c9ebc370bf9a9394cb97feb71b678f07f58419de6d1c6cb5a5\", size = 3558765, upload-time = \"2026-11-12T09:03:37.484Z\" },"], ["+", null, 965, "    { url = \"https://files.pythonhosted.org/packages/37/16/096ce6aae0063f42b1d6ae6f6fe0276208fb929daa5405a92718cf3061b2/psycopg_binary-3.3.9-cp315-cp315-musllinux_1_2_aarch64.whl\", hash = \"sha256:9452241b4684a6321c8e047f4b31a029823fafceddb0809827ec1d506784a3cd\", size = 3907982, upload-time = \"2026-11-12T09:03:43.975Z\" },"], ["+", null, 966, "    { url = \"https://files.pythonhosted.org/packages/34/09/1e8063b591433174211908d9797c7d0e85304a11c92069f66ec66c2c741b/psycopg_binary-3.3.9-cp315-cp315-musllinux_1_2_ppc64le.whl\", hash = \"sha256:9926a6f98fbfbb47ad34fab6151d5e6de917d640a07e78cf07a91005593f7c65\", size = 3586055, upload-time = \"2026-11-12T09:03:49.195Z\" },"], ["+", null, 967, "    { url = \"https://files.pythonhosted.org/packages/f4/04/206ac77650b2313b3e6b2fb0d00ba3bb663095586b824d350a1937738575/psycopg_binary-3.3.9-cp315-cp315-musllinux_1_2_riscv64.whl\", hash = \"sha256:0f049ea20c87608eab3df8f055e8e29743a7af42f5e3e1bdb653611194fa64eb\", size = 3322175, upload-time = \"2026-11-12T09:03:55.836Z\" },"], ["+", null, 968, "    { url = \"https://files.pythonhosted.org/packages/ec/27/22d7d9865c4722abc12be9a15be1f671624f7d440afb66cbd719dcb44a3e/psycopg_binary-3.3.9-cp315-cp315-musllinux_1_2_x86_64.whl\", hash = \"sha256:6ab13f8174a0a63d0b9ec39ac27dd129a4d78f22099f146455b5c3a73957cfb2\", size = 3629954, upload-time = \"2026-11-12T09:04:01.437Z\" },"], ["+", null, 969, "    { url = \"https://files.pythonhosted.org/packages/fb/4e/d066faaffcb5b9d0ef593c2903e767bdd22a12ee36e117c3f13d59cc5efb/psycopg_binary-3.3.9-cp315-cp315-win_amd64.whl\", hash = \"sha256:d5281f3453caebc911b2c5553398d59e217a8101f6b2596311256ba3772167fb\", size = 3010099, upload-time = \"2026-11-12T09:04:04.907Z\" },"], [" ", 954, 970, "]"], [" ", 955, 971, ""], [" ", 956, 972, "[[package]]"]]}], "additions": 46, "deletions": 30, "truncated": false, "category": "lockfile", "github_url": "https://github.com/Medenor/PromptVault/pull/130/files#diff-84321598744d84dbee2318e634c74c9aae39a1c253f1c4bd17ebf9ef2f807b11", "read_minutes": 0}]}, "analysis": {"verdict": {"recommendation": "approve-with-nits", "headline": "Safe swap to psycopg v3: old `.env` URLs keep working, and PostgreSQL finally runs in CI", "why": "The driver change is contained in one property, `sqlalchemy_url`, and its tests cover bare, legacy and other URLs. The new `test-postgres` CI job passed on this PR, which is the check that would have caught #126.\n\nThe nits are operational: the new job is not a required check, and it pins Python 3.14 while the Docker image uses 3.15.", "confidence": "medium", "confidence_note": "Raw SQL under psycopg v3's stricter typing is covered only by the 9 PostgreSQL test files; code paths outside them were not exercised."}, "summary": {"tldr": "SQLAlchemy 2.1 started choosing psycopg v3 for plain `postgresql://` URLs, while PromptVault shipped psycopg2, so the web app crash-looped on PostgreSQL (#126). #128 patched that by forcing psycopg2. This PR goes the other way: it installs psycopg v3, rewrites old URLs to it, and adds a CI job that runs the PostgreSQL tests against a real database.", "why": "#126 shipped because CI only ever ran on SQLite. #127 asked to move to the driver SQLAlchemy now expects instead of pinning the old one.", "what_changed": ["The app talks to PostgreSQL through **psycopg v3** instead of psycopg2.", "`DATABASE_URL` values written as `postgresql://` or `postgresql+psycopg2://` are rewritten to `postgresql+psycopg://`; nobody has to edit their `.env`.", "A new CI job, `test-postgres`, runs 9 PostgreSQL test files against PostgreSQL 15 on every PR.", "`make test-postgres` runs those files one by one and wipes the test schema between them."], "impact": "Deployments pull a new driver on the next image build; no config change. Contributors get a new CI job (not blocking yet).", "key_numbers": [{"label": "PostgreSQL test files in CI", "value": "9", "note": "from PG_TEST_FILES in the Makefile"}]}, "claims": [{"claim": "Existing `.env` files keep working with no edit.", "status": "verified", "evidence": "`_PSYCOPG_REWRITE_RE` matches both the bare and the `+psycopg2` prefix, and `test_legacy_psycopg2_url_is_mapped_to_psycopg3` asserts the rewrite.", "ref": {"file": "src/db/config.py", "side": "new", "start": 85, "end": 87}}, {"claim": "uv.lock is regenerated; only the two driver packages change.", "status": "partly", "evidence": "The lock swaps psycopg2-binary for psycopg and psycopg-binary, and also bumps the lockfile format from `revision = 3` to `revision = 5`, which the description doesn't mention. Harmless: CI and the Docker build install with pip.", "ref": {"file": "uv.lock", "side": "new", "start": 2, "end": 2}}, {"claim": "All 9 PostgreSQL test files pass against a real PostgreSQL 15 (61 passed, 1 skipped).", "status": "verified", "evidence": "The author's local numbers are not checkable, but the `test-postgres` CI job, which runs the same 9 files on postgres:15-alpine, passed on this PR's head."}, {"claim": "The reset script refuses unless the database name contains `test`.", "status": "verified", "evidence": "It parses the URL and returns 2 before connecting when the name lacks `test`.", "ref": {"file": "scripts/reset_test_postgres.py", "side": "new", "start": 33, "end": 38}}, {"claim": "Built the real image (python:3.15-slim) and ran the Alembic upgrade in it.", "status": "unverified", "evidence": "Nothing in the diff or CI builds the image; this rests on the author's word."}, {"claim": "Stacked on #128 (base is that branch; GitHub retargets to `main` once #128 merges).", "status": "contradicted", "evidence": "The PR's base is `main` and #128 was already merged (the body's own second paragraph says so). The first paragraph is left over from an earlier iteration."}], "story": [{"title": "The dependency swap", "body": "One line in `pyproject.toml` replaces **psycopg2**, the long-standing PostgreSQL driver, with **psycopg v3** (package `psycopg`). `[binary]` pulls a precompiled wheel, so no C compiler is needed.", "ref": {"file": "pyproject.toml", "side": "new", "start": 34, "end": 34}}, {"title": "The old pin, removed", "body": "Before, any bare `postgresql://` URL was forced onto psycopg2. That pin was #128's hotfix for #126.", "ref": {"file": "src/db/config.py", "side": "old", "start": 81, "end": 82}, "more_title": "Why the pin existed", "more": "SQLAlchemy 2.1 resolves a URL without a driver (`postgresql://`) to psycopg v3. With only psycopg2 installed, the import failed at startup and the container restarted forever."}, {"title": "One regex for both old URL forms", "body": "`_PSYCOPG_REWRITE_RE` matches `postgresql://` and `postgresql+psycopg2://`. Everything after the scheme is kept as is.", "ref": {"file": "src/db/config.py", "side": "new", "start": 28, "end": 31}, "more_title": "Which URLs are left alone", "more": "- `postgresql+psycopg://` and `postgresql+asyncpg://` already name a driver\n- `sqlite:///…` is not PostgreSQL\n- The regex is anchored with `^`, so a password containing `postgresql://` is not touched"}, {"title": "The rewrite itself", "body": "`sqlalchemy_url` swaps the matched prefix for `postgresql+psycopg://`. `DATABASE_URL` itself is never modified, so `libpq_url` (used for `pg_dump`) still sees the original.", "ref": {"file": "src/db/config.py", "side": "new", "start": 85, "end": 88}}, {"title": "Tests pin the new behaviour", "body": "The driver tests now expect psycopg v3, check the legacy mapping, and import the resolved driver for real, which is exactly how #126 failed.", "ref": {"file": "tests/test_db_url_driver.py", "side": "new", "start": 32, "end": 41}}, {"title": "A psycopg v3 difference, caught by a test", "body": "psycopg v3 doesn't fill `cursor.lastrowid` on PostgreSQL, so a test helper now asks for the id with `RETURNING id`.", "ref": {"file": "tests/test_migration_prompt_legacy_public.py", "side": "new", "start": 56, "end": 60}}, {"title": "PostgreSQL in CI at last", "body": "The new `test-postgres` job starts a PostgreSQL 15 service and runs `make test-postgres`. It is not a required check yet.", "ref": {"file": ".github/workflows/ci.yml", "side": "new", "start": 134, "end": 154}, "more_title": "How the Makefile isolates test files", "more": "Each file runs in its own pytest process, and `scripts/reset_test_postgres.py` drops and recreates the `public` schema in between. Migration tests leave tables behind (`search_vector already exists`), which broke later files in a shared session."}], "diagrams": [{"title": "Which driver a DATABASE_URL reaches", "caption": "Both old forms now converge on psycopg v3; URLs that already name another driver pass through.", "mermaid": "flowchart LR\n  A[\"postgresql://\"] --> R{rewrite regex}\n  B[\"postgresql+psycopg2://\"] --> R\n  R --> P[\"postgresql+psycopg://\"]\n  C[\"postgresql+asyncpg://\"] --> U[unchanged]\n  D[\"sqlite:///\"] --> U\n  P --> V[psycopg v3]"}, {"title": "make test-postgres", "caption": "Each file gets a fresh schema, so leftovers from migration tests can't leak.", "mermaid": "sequenceDiagram\n  participant M as make\n  participant R as reset script\n  participant DB as PostgreSQL\n  participant T as pytest\n  loop each of 9 files\n    M->>R: reset\n    R->>DB: DROP and CREATE SCHEMA\n    M->>T: run one file\n    T->>DB: queries\n  end"}], "reading_order": [{"file": "pyproject.toml", "attention": "glance", "why": "The dependency swap everything else follows from."}, {"file": "src/db/config.py", "attention": "read", "why": "The only production code change: how URLs map to a driver."}, {"file": "tests/test_db_url_driver.py", "attention": "read", "why": "Pins the URL mapping, including the legacy form."}, {"file": "tests/test_migration_prompt_legacy_public.py", "attention": "glance", "why": "A small psycopg v3 compatibility fix."}, {"file": "scripts/reset_test_postgres.py", "attention": "read", "why": "Destructive: check the safety guard."}, {"file": "Makefile", "attention": "read", "why": "How the PostgreSQL tests are run, file by file."}, {"file": ".github/workflows/ci.yml", "attention": "read", "why": "The new CI job and its database service."}, {"file": "docs/TESTING.md", "attention": "glance", "why": "Points readers at the new make target."}, {"file": "docs/CHANGELOG.md", "attention": "glance", "why": "Release note."}, {"file": "uv.lock", "attention": "skip", "why": "Generated; the driver packages are the only real change."}], "file_notes": {"src/db/config.py": "Rewrites bare and legacy PostgreSQL URLs to the psycopg v3 driver.", "scripts/reset_test_postgres.py": "Wipes the test database's schema between test files; refuses non-test databases.", "Makefile": "Adds `make test-postgres`, which runs each PostgreSQL test file in isolation.", ".github/workflows/ci.yml": "New non-blocking CI job against a real PostgreSQL 15."}, "risks": [{"title": "Stricter parameter typing in raw SQL", "severity": "medium", "detail": "psycopg v3 binds parameters server-side, so a raw `text()` query that passed a string where PostgreSQL expects an integer (or the reverse) can now fail at runtime where psycopg2 coerced it silently.", "catch": "The 9 PostgreSQL test files cover the FTS and migration queries; any raw SQL outside them is unchecked."}, {"title": "Docs promise a variable the make target ignores", "severity": "low", "detail": "`docs/TESTING.md` says to set `TEST_DATABASE_URL` (or `DATABASE_URL`), but `make test-postgres` only checks `DATABASE_URL` (Makefile line 173). Someone following the docs with only `TEST_DATABASE_URL` set gets the 'Set DATABASE_URL' error.", "catch": "Either read `TEST_DATABASE_URL` in the target or drop it from the docs.", "ref": {"file": "docs/TESTING.md", "side": "new", "start": 713, "end": 713}}, {"title": "The new CI job can be ignored", "severity": "low", "detail": "`test-postgres` is not a required check, so a red run would not block a merge: the same gap that let #126 through.", "catch": "Make it required in branch protection once it has been stable for a few PRs.", "ref": {"file": ".github/workflows/ci.yml", "side": "new", "start": 131, "end": 133}}, {"title": "CI Python differs from the image", "severity": "low", "detail": "The job installs Python 3.14; the Docker image is python:3.15-slim. A wheel or behaviour difference between them would not show in CI.", "ref": {"file": ".github/workflows/ci.yml", "side": "new", "start": 162, "end": 162}}], "checklist": [{"item": "Confirm the `test-postgres` job really ran the backup round trip (not skipped) in its log", "why": "The author's local run skipped it; CI is the only place it runs."}, {"item": "Decide whether `test-postgres` becomes a required check", "why": "Settles the 'can be ignored' risk."}, {"item": "Restart one deployment with its current `.env` after merge", "why": "The legacy URL mapping is unit-tested, not tested against a real deployment."}], "questions_for_author": ["Should the CI job use Python 3.15 to match the Docker image?", "Are there raw SQL queries outside the 9 PostgreSQL test files that pass parameters psycopg v3 might type differently?", "`docs/TESTING.md` mentions `TEST_DATABASE_URL`, but `make test-postgres` only reads `DATABASE_URL`. Which one should it be?"], "concepts": [{"term": "psycopg v3", "short": "The current PostgreSQL driver for Python, package `psycopg`.", "explain": "It replaces psycopg2. For this PR the difference that matters is that it sends parameters to the server separately from the SQL (server-side binding), so PostgreSQL checks their types strictly. It also leaves `cursor.lastrowid` empty; use `RETURNING id` instead.", "link": "https://www.psycopg.org/psycopg3/docs/basic/from_pg2.html"}, {"term": "SQLAlchemy dialect + driver", "short": "The `+name` part of a database URL picks the Python driver.", "explain": "`postgresql+psycopg://` means the PostgreSQL dialect through psycopg v3. Without `+name`, SQLAlchemy picks its default driver, and SQLAlchemy 2.1 changed that default from psycopg2 to psycopg v3, which caused #126."}, {"term": "CI service container", "short": "A database GitHub Actions starts next to the job.", "explain": "The `services:` block runs `postgres:15-alpine` for the job's duration, reachable on localhost:5432. The health check makes the job wait until PostgreSQL accepts connections."}], "quiz": [{"question": "A deployment's `.env` says `DATABASE_URL=postgresql+psycopg2://u:p@db/pv`. What happens after this PR?", "options": ["It crashes: psycopg2 is no longer installed", "It connects through psycopg v3", "It connects through psycopg2"], "answer": 1, "explain": "The legacy prefix matches `_PSYCOPG_REWRITE_RE` and `sqlalchemy_url` turns it into `postgresql+psycopg://`."}, {"question": "What does `pg_dump` receive for the same URL?", "options": ["`postgresql+psycopg://…`", "A plain `postgresql://…` URI", "Nothing: backups now go through SQLAlchemy"], "answer": 1, "explain": "`libpq_url` strips the driver suffix; libpq tools don't understand `+driver`."}, {"question": "You run `make test-postgres` with `DATABASE_URL` pointing at `promptvault_prod`. What happens?", "options": ["The schema is wiped", "The reset script refuses and make stops", "Tests run without a reset"], "answer": 1, "explain": "The reset script exits with code 2 when the database name doesn't contain `test`, and the loop stops on `|| exit 1`."}], "try_it": {"title": "What happens to your DATABASE_URL", "input_label": "DATABASE_URL in .env", "before_label": "Before this PR (psycopg2 pin)", "after_label": "After this PR", "rows": [{"input": "postgresql://u:p@db:5432/pv", "before": "postgresql+psycopg2://u:p@db:5432/pv", "after": "postgresql+psycopg://u:p@db:5432/pv", "note": "A bare URL gets an explicit driver in both versions; only the driver changes."}, {"input": "postgresql+psycopg2://u:p@db/pv", "before": "postgresql+psycopg2://u:p@db/pv", "after": "postgresql+psycopg://u:p@db/pv", "note": "The legacy form is rewritten, so existing `.env` files keep working after psycopg2 is removed."}, {"input": "postgresql+psycopg://u:p@db/pv", "before": "postgresql+psycopg://u:p@db/pv", "after": "postgresql+psycopg://u:p@db/pv", "note": "Already explicit: unchanged."}, {"input": "postgresql+asyncpg://u:p@db/pv", "before": "postgresql+asyncpg://u:p@db/pv", "after": "postgresql+asyncpg://u:p@db/pv", "note": "Names another driver: left alone."}, {"input": "sqlite:///./data/promptvault.db", "before": "sqlite:///./data/promptvault.db", "after": "sqlite:///./data/promptvault.db", "note": "Not PostgreSQL: untouched."}, {"input": "postgresql://u:postgresql%3A%2F%2F@db/pv", "before": "postgresql+psycopg2://u:postgresql%3A%2F%2F@db/pv", "after": "postgresql+psycopg://u:postgresql%3A%2F%2F@db/pv", "note": "The regex is anchored at the start, so scheme-like text in the password is kept."}]}}, "warnings": [], "generated_at": "2026-11-25 12:22 UTC"}</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script>/* pr-review-guide page script. Data: #data (pr.json + analysis.json + warnings). No network calls. */
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const PR = DATA.pr, A = DATA.analysis || {}, WARN = DATA.warnings || [];
+  const FILES = PR.files || [];
+  const byPath = new Map(FILES.map(f => [f.path, f]));
+  const KEY = "prg:" + PR.repo + "#" + PR.number + "@" + String(PR.head_sha || "").slice(0, 10);
+  const $ = (s, el) => (el || document).querySelector(s);
+  const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+
+  // ------------------------------------------------------------ storage (per viewer, optional)
+  function load(k, def) { try { const v = localStorage.getItem(KEY + ":" + k); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+  function save(k, v) { try { localStorage.setItem(KEY + ":" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+
+  // ------------------------------------------------------------ text helpers
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function inline(s) {
+    let t = esc(s);
+    const codes = [];
+    t = t.replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return "\u0000" + (codes.length - 1) + "\u0000"; });
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
+    t = t.replace(/(^|[\s(])#(\d+)\b/g, (m, pre, n) => pre + '<a href="https://github.com/' + esc(PR.repo) + '/issues/' + n + '" target="_blank" rel="noopener">#' + n + "</a>");
+    return t.replace(/\u0000(\d+)\u0000/g, (_, i) => "<code>" + codes[+i] + "</code>");
+  }
+  function md(s) {
+    if (!s) return "";
+    const blocks = String(s).trim().split(/\n\s*\n/);
+    return '<div class="md">' + blocks.map(b => {
+      const lines = b.split("\n");
+      if (lines.every(l => /^\s*[-*] /.test(l))) return "<ul>" + lines.map(l => "<li>" + inline(l.replace(/^\s*[-*] /, "")) + "</li>").join("") + "</ul>";
+      return "<p>" + lines.map(inline).join("<br>") + "</p>";
+    }).join("") + "</div>";
+  }
+  const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+
+  // ------------------------------------------------------------ word diff
+  function tokens(s) { return s.match(/\s+|[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/g) || []; }
+  function wordDiff(a, b) {
+    const x = tokens(a), y = tokens(b);
+    if (x.length * y.length > 60000) return null;
+    const m = x.length, n = y.length, dp = Array.from({ length: m + 1 }, () => new Uint16Array(n + 1));
+    for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--)
+      dp[i][j] = x[i] === y[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const same = dp[0][0];
+    const sig = (arr) => arr.filter(t => /\S/.test(t)).length || 1;
+    if (same / Math.max(x.length, y.length, 1) < 0.5 || same < sig(x) / 3) return null;
+    let i = 0, j = 0, oa = "", nb = "";
+    while (i < m || j < n) {
+      if (i < m && j < n && x[i] === y[j]) { oa += esc(x[i]); nb += esc(y[j]); i++; j++; }
+      else if (j < n && (i >= m || dp[i][j + 1] >= dp[i + 1][j])) { nb += "<ins>" + esc(y[j]) + "</ins>"; j++; }
+      else { oa += "<del>" + esc(x[i]) + "</del>"; i++; }
+    }
+    return [oa.replace(/<\/del><del>/g, ""), nb.replace(/<\/ins><ins>/g, "")];
+  }
+  const pairCache = new WeakMap();
+  function hunkPairs(h) {
+    if (pairCache.has(h)) return pairCache.get(h);
+    const out = new Map(), L = h.lines;
+    let i = 0;
+    while (i < L.length) {
+      if (L[i][0] !== "-") { i++; continue; }
+      let d = i; while (d < L.length && L[d][0] === "-") d++;
+      let a = d; while (a < L.length && L[a][0] === "+") a++;
+      const nd = d - i, na = a - d;
+      for (let k = 0; k < Math.min(nd, na); k++) {
+        const r = wordDiff(L[i + k][3], L[d + k][3]);
+        if (r) { out.set(i + k, r[0]); out.set(d + k, r[1]); }
+      }
+      i = a;
+    }
+    pairCache.set(h, out);
+    return out;
+  }
+
+  // ------------------------------------------------------------ code rendering
+  function inRange(line, ref) {
+    if (!ref) return false;
+    const n = ref.side === "old" ? line[1] : line[2];
+    return n != null && n >= ref.start && n <= (ref.end == null ? ref.start : ref.end);
+  }
+  function lineHtml(h, idx, ref) {
+    const l = h.lines[idx], t = l[0];
+    const cls = (t === "+" ? "add" : t === "-" ? "del" : "ctx") + (inRange(l, ref) ? " hl" : "");
+    const pairs = hunkPairs(h);
+    const body = pairs.has(idx) ? pairs.get(idx) : esc(l[3]);
+    return '<div class="ln ' + cls + '" data-o="' + (l[1] == null ? "" : l[1]) + '" data-n="' + (l[2] == null ? "" : l[2]) + '">' +
+      '<span class="no o">' + (l[1] == null ? "" : l[1]) + '</span><span class="no">' + (l[2] == null ? "" : l[2]) + "</span>" +
+      '<span class="sig">' + (t === " " ? "" : t === "-" ? "−" : "+") + "</span><code>" + (body || " ") + "</code></div>";
+  }
+  function fileCode(f, ref, opts) {
+    opts = opts || {};
+    let html = "";
+    if (f.binary) return '<div class="gap-row">Binary file, not shown.</div>';
+    if (!f.hunks.length) return '<div class="gap-row">No line changes (mode change or rename only).</div>';
+    f.hunks.forEach((h, hi) => {
+      let lo = 0, hiIdx = h.lines.length - 1;
+      if (opts.excerpt) {
+        const hit = h.lines.map((l, i) => inRange(l, ref) ? i : -1).filter(i => i >= 0);
+        if (!hit.length) return;
+        lo = Math.max(0, hit[0] - 2); hiIdx = Math.min(h.lines.length - 1, hit[hit.length - 1] + 2);
+      } else {
+        html += '<div class="hunk-head">@@ −' + h.old_start + " +" + h.new_start + (h.context ? " · " + esc(h.context) : "") + "</div>";
+      }
+      for (let i = lo; i <= hiIdx; i++) html += lineHtml(h, i, ref);
+      if (opts.excerpt && hi < f.hunks.length - 1) html += "";
+    });
+    if (f.truncated && !opts.excerpt) html += '<div class="gap-row">Diff truncated here; the rest is on GitHub.</div>';
+    return '<div class="code' + (ref && !opts.excerpt ? " focus" : "") + '">' + html + "</div>";
+  }
+  function refLabel(ref) {
+    if (!ref) return "";
+    const e = ref.end != null && ref.end !== ref.start ? "–" + ref.end : "";
+    return ref.file + ":" + (ref.side === "old" ? "old " : "") + ref.start + e;
+  }
+  function refLink(ref, text) {
+    if (!ref) return "";
+    return '<a class="reflink" data-ref="' + esc(JSON.stringify(ref)) + '">' + esc(text || refLabel(ref)) + "</a>";
+  }
+
+  // ------------------------------------------------------------ chips
+  const CAT_COLOR = { source: "#3b6fd8", test: "#2f9e62", migration: "#b0467a", config: "#c98a12", ci: "#7a5cc8", docs: "#5b8fa3", lockfile: "#9aa3ae", generated: "#b7bec7", binary: "#c4c9cf" };
+  const REC = { "approve": ["ok", "Approve"], "approve-with-nits": ["ok", "Approve with nits"], "request-changes": ["bad", "Request changes"], "needs-discussion": ["warn", "Needs discussion"] };
+  const CLAIM = { verified: ["ok", "Verified"], partly: ["warn", "Partly"], unverified: ["", "Unverified"], contradicted: ["bad", "Contradicted"] };
+  const SEV = { high: "bad", medium: "warn", low: "" };
+  const ATT = { read: ["accent", "Read"], glance: ["", "Glance"], skip: ["", "Skip"] };
+  const chip = (cls, text) => '<span class="chip ' + (cls || "") + '">' + esc(text) + "</span>";
+  const statusChip = f => chip(f.status === "added" ? "ok" : f.status === "removed" ? "bad" : f.status === "renamed" ? "warn" : "", f.status);
+  const nums = f => '<span class="nums"><span class="add">+' + f.additions + '</span> <span class="del">−' + f.deletions + "</span></span>";
+
+  // ------------------------------------------------------------ header, warnings, footer
+  $("#brand").innerHTML = esc(PR.repo) + " <span>#" + PR.number + "</span>";
+  if (WARN.length) {
+    $("#warnings").innerHTML = '<div class="banner"><details><summary><strong>' + plural(WARN.length, "problem") +
+      " in the analysis</strong>: some references may point at the wrong lines.</summary><ul>" +
+      WARN.map(w => "<li>" + esc(w) + "</li>").join("") + "</ul></details></div>";
+  }
+  $("#foot").innerHTML = "Diff and metadata from " + esc(PR.diff_source) + " at " + esc(String(PR.head_sha || "").slice(0, 9)) +
+    ". Verdict, story, risks, notes and quiz are Claude's analysis. Page built " + esc(DATA.generated_at) + ".";
+
+  // ------------------------------------------------------------ summary tab
+  function renderSummary() {
+    const v = A.verdict || {}, s = A.summary || {};
+    const rec = REC[v.recommendation] || ["", v.recommendation || "No verdict"];
+    const checks = PR.checks || [];
+    const cOk = checks.filter(c => c.result === "success").length, cBad = checks.filter(c => c.result === "failure").length, cPend = checks.filter(c => c.result === "pending").length;
+    const stateCls = { merged: "accent", open: "ok", closed: "bad", draft: "" }[PR.state] || "";
+    const byCat = {};
+    FILES.forEach(f => { byCat[f.category] = (byCat[f.category] || 0) + f.additions + f.deletions; });
+    const total = Object.values(byCat).reduce((a, b) => a + b, 0) || 1;
+    const cats = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
+    let h = '<div class="narrow stack">';
+    h += '<div class="hero"><div class="hero-meta">' + chip(stateCls, PR.state) +
+      ((PR.agent_written || A.agent_written) ? '<span class="chip warn" title="' + esc((PR.agent_evidence || []).concat(A.agent_written_why ? [A.agent_written_why] : []).join("; ")) + '">Agent-written</span>' : "") +
+      '<span class="mono">' + esc(PR.base) + " ← " + esc(PR.head) + "</span><span>by " + esc(PR.author) + "</span>" +
+      '<a href="' + esc(PR.url) + '" target="_blank" rel="noopener">Open on GitHub ↗</a></div>' +
+      "<h1>" + esc(PR.title) + "</h1></div>";
+    h += '<div class="card verdict ' + esc(v.recommendation || "") + '"><div class="verdict-top"><span class="eyebrow">Verdict</span>' + chip(rec[0], rec[1]) +
+      (v.confidence ? chip("", v.confidence + " confidence") : "") + '<span class="mine">Claude\'s analysis</span></div>' +
+      '<div class="headline">' + inline(v.headline || "") + "</div>" + md(v.why) +
+      (v.confidence_note ? '<div class="small muted">' + inline(v.confidence_note) + "</div>" : "") + "</div>";
+    h += '<div class="stats">' +
+      stat(FILES.length, "files changed", "") +
+      stat('<span class="add">+' + PR.additions + '</span> <span class="del">−' + PR.deletions + "</span>", "lines", "") +
+      stat(PR.commits.length, plural(PR.commits.length, "commit").replace(/^\d+ /, ""), "") +
+      stat(checks.length ? cOk + "/" + checks.length : "—", "CI checks passed", cBad ? cBad + " failed" : cPend ? cPend + " pending" : "") +
+      stat("~" + PR.read_minutes + " min", "to read the diff", "rough, by file type") +
+      (A.summary && A.summary.key_numbers || []).map(k => stat(esc(k.value), esc(k.label), esc(k.note || ""))).join("") + "</div>";
+    if (s.tldr) h += '<div class="card"><div class="section-head"><h2>In short</h2><span class="mine">Claude\'s analysis</span></div>' + md(s.tldr) + "</div>";
+    h += '<div class="two-col">';
+    h += '<div class="card"><h3>Why</h3>' + md(s.why || "—") + "</div>";
+    h += '<div class="card"><h3>What changes</h3>' + md((s.what_changed || []).map(x => "- " + x).join("\n")) +
+      (s.impact ? '<div class="small muted" style="margin-top:8px"><strong>Impact:</strong> ' + inline(s.impact) + "</div>" : "") + "</div>";
+    h += "</div>";
+    h += '<div class="card"><h3>Where the lines are</h3><div class="compo-bar">' + cats.map(c => '<span style="width:' + (byCat[c] / total * 100) + "%;background:" + (CAT_COLOR[c] || "#999") + '" title="' + esc(c) + '"></span>').join("") +
+      '</div><div class="legend">' + cats.map(c => "<span><i style=\"background:" + (CAT_COLOR[c] || "#999") + '"></i>' + esc(c) + " · " + byCat[c] + "</span>").join("") + "</div></div>";
+    if ((A.claims || []).length) {
+      h += '<div class="card"><div class="section-head"><h2>Claims check</h2><span class="small muted">What the PR says, checked against the diff and CI</span></div><table class="claims"><tbody>' +
+        A.claims.map(c => { const st = CLAIM[c.status] || ["", c.status]; return "<tr><td>" + chip(st[0], st[1]) + "</td><td>" + inline(c.claim) +
+          '<div class="ev">' + inline(c.evidence || "") + (c.ref ? " · " + refLink(c.ref) : "") + "</div></td></tr>"; }).join("") + "</tbody></table></div>";
+    }
+    if (checks.length) {
+      h += '<div class="card"><h3>CI</h3><div class="ci-list">' + checks.map(c => {
+        const cls = { success: "ok", failure: "bad", pending: "warn" }[c.result] || "";
+        return '<a href="' + esc(c.url || PR.url) + '" target="_blank" rel="noopener">' + chip(cls, (c.workflow ? c.workflow + " / " : "") + c.name) + "</a>";
+      }).join("") + "</div></div>";
+    }
+    if ((PR.linked_issues || []).length) {
+      h += '<div class="card"><h3>Linked issues and PRs</h3><div class="linked">' + PR.linked_issues.map(i =>
+        '<a href="' + esc(i.url) + '" target="_blank" rel="noopener"><span class="num">#' + i.number + "</span><span>" + esc(i.title) + "</span>" + chip(i.state === "open" ? "ok" : "", i.kind + " · " + i.state) + "</a>").join("") + "</div></div>";
+    }
+    if ((A.questions_for_author || []).length) {
+      h += '<div class="card"><h3>Questions for the author</h3><ol class="qlist">' + A.questions_for_author.map(q => "<li>" + inline(q) + "</li>").join("") + "</ol></div>";
+    }
+    if (PR.body) h += '<details class="card"><summary><strong>PR description</strong> <span class="small muted">as written by the author</span></summary><div style="margin-top:10px">' + md(PR.body) + "</div></details>";
+    h += "</div>";
+    $("#tab-summary").innerHTML = h;
+  }
+  function stat(v, l, n) { return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + "</div>" + (n ? '<div class="n">' + n + "</div>" : "") + "</div>"; }
+
+  // ------------------------------------------------------------ walkthrough tab
+  let activeStep = -1;
+  function renderWalk() {
+    const story = A.story || [];
+    if (!story.length) { $("#tab-walkthrough").innerHTML = '<div class="narrow card muted">No walkthrough in this analysis.</div>'; return; }
+    let h = '<div class="walk"><div class="steps">';
+    story.forEach((s, i) => {
+      const f = s.ref && byPath.get(s.ref.file);
+      h += '<article class="step" data-i="' + i + '" id="step-' + (i + 1) + '"><div class="step-num">Step ' + (i + 1) + " / " + story.length + "</div><h3>" + inline(s.title) + "</h3>" + md(s.body) +
+        (s.ref ? '<div class="where">' + esc(refLabel(s.ref)) + "</div>" : "") +
+        (s.more ? '<details class="more"><summary>' + inline(s.more_title || "More detail") + "</summary>" + md(s.more) + "</details>" : "") +
+        (f ? '<div class="excerpt">' + fileCode(f, s.ref, { excerpt: true }) + "</div>" : "") + "</article>";
+    });
+    h += '</div><aside class="panel" aria-live="polite"><div class="progress"><span id="walk-prog"></span></div><div class="panel-head" id="panel-head"></div><div class="panel-body" id="panel-body"></div></aside></div>';
+    $("#tab-walkthrough").innerHTML = h;
+    $$(".step").forEach(el => el.addEventListener("click", e => {
+      if (e.target.closest("a, summary, details")) return;
+      const i = +el.dataset.i; setStep(i);
+      el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    }));
+    activeStep = -1; setStep(0);
+  }
+  let panelFile = null;
+  function setStep(i) {
+    const story = A.story || [];
+    if (i === activeStep || !story[i]) return;
+    activeStep = i;
+    $$(".step").forEach(el => el.classList.toggle("active", +el.dataset.i === i));
+    const s = story[i], f = s.ref && byPath.get(s.ref.file);
+    $("#walk-prog").style.width = ((i + 1) / story.length * 100) + "%";
+    const head = $("#panel-head"), body = $("#panel-body");
+    if (!f) { head.innerHTML = '<span class="path muted">No code for this step</span>'; body.innerHTML = ""; panelFile = null; return; }
+    head.innerHTML = '<span class="path">' + esc(f.path) + "</span>" + chip("", f.category) + nums(f) +
+      ' <a class="reflink" data-ref="' + esc(JSON.stringify(s.ref)) + '">Open in diff</a>';
+    if (panelFile !== f.path) { body.innerHTML = fileCode(f, s.ref); panelFile = f.path; }
+    else {
+      $$(".ln", body).forEach(el => {
+        const n = s.ref.side === "old" ? el.dataset.o : el.dataset.n;
+        el.classList.toggle("hl", n !== "" && +n >= s.ref.start && +n <= (s.ref.end == null ? s.ref.start : s.ref.end));
+      });
+    }
+    const first = $(".ln.hl", body);
+    if (first) body.scrollTop = Math.max(0, first.offsetTop - body.clientHeight / 3);
+  }
+  function onScroll() {
+    if (currentTab !== "walkthrough") return;
+    const steps = $$(".step");
+    if (!steps.length) return;
+    const mark = window.innerHeight * 0.42;
+    let idx = 0;
+    if (window.scrollY > 40) steps.forEach((el, i) => { if (el.getBoundingClientRect().top <= mark) idx = i; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) idx = steps.length - 1;
+    setStep(idx);
+  }
+  let ticking = false;
+  window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; onScroll(); }); } }, { passive: true });
+
+  // ------------------------------------------------------------ map tab
+  function renderMap() {
+    const ro = A.reading_order || [];
+    const notes = A.file_notes || {};
+    let h = '<div class="narrow stack">';
+    (A.diagrams || []).forEach((d, i) => {
+      h += '<div class="card"><div class="section-head"><h2>' + inline(d.title || "Diagram") + '</h2><span class="mine">Claude\'s analysis</span></div>' +
+        (d.caption ? '<p class="muted small" style="margin-top:0">' + inline(d.caption) + "</p>" : "") +
+        '<div class="diagram" id="diagram-' + i + '"><pre class="mermaid-src">' + esc(d.mermaid) + "</pre></div></div>";
+    });
+    const list = ro.length ? ro : FILES.map(f => ({ file: f.path, attention: ["lockfile", "generated", "binary"].includes(f.category) ? "skip" : "read", why: "" }));
+    h += '<div class="card"><div class="section-head"><h2>Reading order</h2><span class="small muted">' +
+      (ro.length ? "Dependencies first, each test after its code" : "No order in the analysis; files as GitHub lists them") + "</span></div><div class=\"reading\">";
+    list.forEach((r, i) => {
+      const f = byPath.get(r.file); if (!f) return;
+      const att = ATT[r.attention] || ["", r.attention];
+      h += '<div class="ro ' + esc(r.attention) + '"><div class="ro-n">' + (i + 1) + '</div><div><a class="path reflink" data-ref="' + esc(JSON.stringify({ file: f.path })) + '">' + esc(f.path) + "</a>" +
+        '<div class="small muted">' + inline(r.why || notes[f.path] || "") + '</div></div><div class="ro-side">' + chip(att[0], att[1]) + nums(f) + "<span class=\"small muted\">" + esc(f.category) + "</span></div></div>";
+    });
+    h += "</div></div></div>";
+    $("#tab-map").innerHTML = h;
+    mermaidDone = false;
+  }
+  let mermaidDone = false;
+  function isDark() {
+    const t = document.documentElement.dataset.theme;
+    return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  async function renderMermaid() {
+    if (mermaidDone || !(A.diagrams || []).length) return;
+    if (!window.mermaid) { window.addEventListener("load", () => { if (currentTab === "map") renderMermaid(); }, { once: true }); return; }
+    mermaidDone = true;
+    try { window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: isDark() ? "dark" : "neutral", fontFamily: "Inter, system-ui, sans-serif" }); }
+    catch (e) { return; }
+    for (let i = 0; i < A.diagrams.length; i++) {
+      const box = $("#diagram-" + i); if (!box) continue;
+      try {
+        const out = await window.mermaid.render("mmd-" + i + "-" + Date.now(), A.diagrams[i].mermaid);
+        box.innerHTML = out.svg;
+      } catch (e) {
+        box.innerHTML = '<pre class="mermaid-src">' + esc(A.diagrams[i].mermaid) + '</pre><div class="small" style="color:var(--bad)">Diagram did not parse: ' + esc(e.message || e) + "</div>";
+      }
+    }
+  }
+
+  // ------------------------------------------------------------ risks + checklist tab
+  function renderRisks() {
+    const risks = (A.risks || []).slice().sort((a, b) => ["high", "medium", "low"].indexOf(a.severity) - ["high", "medium", "low"].indexOf(b.severity));
+    const checks = A.checklist || [];
+    const done = load("checklist", {});
+    let h = '<div class="narrow stack">';
+    h += '<div><div class="section-head"><h2>Risks</h2><span class="mine">Claude\'s analysis</span></div>';
+    if (!risks.length) h += '<div class="card muted">No specific risks found.</div>';
+    h += '<div class="stack" style="gap:12px">' + risks.map(r => '<div class="card risk ' + esc(r.severity) + '"><div class="row">' + chip(SEV[r.severity], r.severity) +
+      "<strong>" + inline(r.title) + "</strong></div>" + md(r.detail) +
+      (r.catch ? '<div class="catch"><strong>What would catch it:</strong> ' + inline(r.catch) + "</div>" : "") +
+      (r.ref ? '<div class="small">' + refLink(r.ref) + "</div>" : "") + "</div>").join("") + "</div></div>";
+    if (checks.length) {
+      h += '<div class="card"><div class="section-head"><h2>Before you merge</h2><span class="small muted" id="check-count"></span></div><div class="meter"><span id="check-meter"></span></div><div style="margin-top:8px">' +
+        checks.map((c, i) => '<div class="check-item' + (done[i] ? " done" : "") + '"><input type="checkbox" id="chk-' + i + '" data-i="' + i + '"' + (done[i] ? " checked" : "") + '><label for="chk-' + i + '" class="txt">' + inline(c.item) +
+          (c.why ? '<div class="small muted">' + inline(c.why) + "</div>" : "") + (c.ref ? '<div class="small">' + refLink(c.ref) + "</div>" : "") + "</label></div>").join("") + "</div></div>";
+    }
+    h += '<div class="card"><div class="section-head"><h2>Review notes</h2><span class="small muted">Copy and post them yourself; this page never writes to GitHub</span></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="copy-notes" type="button">Copy review notes</button><span class="small muted" id="copy-status" role="status"></span></div>' +
+      '<textarea class="notes" id="notes" spellcheck="false" aria-label="Review notes"></textarea></div>';
+    h += "</div>";
+    $("#tab-risks").innerHTML = h;
+    $$("#tab-risks input[type=checkbox]").forEach(cb => cb.addEventListener("change", () => {
+      const d = load("checklist", {}); d[cb.dataset.i] = cb.checked; save("checklist", d);
+      cb.closest(".check-item").classList.toggle("done", cb.checked); updateChecks();
+    }));
+    $("#copy-notes").addEventListener("click", () => {
+      const ta = $("#notes"); const text = ta.value;
+      const ok = () => { $("#copy-status").textContent = "Copied"; setTimeout(() => { $("#copy-status").textContent = ""; }, 2000); };
+      const fallback = () => { ta.focus(); ta.select(); $("#copy-status").textContent = "Selected: press ⌘C / Ctrl+C"; };
+      try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+    });
+    updateChecks();
+  }
+  function updateChecks() {
+    const checks = A.checklist || [], d = load("checklist", {});
+    const n = checks.filter((_, i) => d[i]).length;
+    if ($("#check-count")) { $("#check-count").textContent = n + " of " + checks.length + " checked"; $("#check-meter").style.width = (checks.length ? n / checks.length * 100 : 0) + "%"; }
+    const ta = $("#notes"); if (!ta) return;
+    const lines = [];
+    const rec = REC[(A.verdict || {}).recommendation];
+    if (rec) lines.push("**" + rec[1] + "**" + ((A.verdict || {}).headline ? ": " + A.verdict.headline : ""), "");
+    if (checks.length) { lines.push("Checked before merge:"); checks.forEach((c, i) => lines.push("- [" + (d[i] ? "x" : " ") + "] " + c.item)); lines.push(""); }
+    const qs = A.questions_for_author || [];
+    if (qs.length) { lines.push("Questions:"); qs.forEach((q, i) => lines.push((i + 1) + ". " + q)); }
+    ta.value = lines.join("\n").trim();
+  }
+
+  // ------------------------------------------------------------ learn tab
+  function renderLearn() {
+    const concepts = A.concepts || [], quiz = A.quiz || [], tryIt = A.try_it;
+    let h = '<div class="narrow stack">';
+    if (tryIt && (tryIt.rows || []).length) {
+      const hasBefore = tryIt.rows.some(r => r.before != null);
+      h += '<div class="card"><div class="section-head"><h2>' + inline(tryIt.title || "Try it") + '</h2><span class="mine">Worked out from the code by Claude</span></div>' +
+        '<label class="small muted" for="try-in">' + esc(tryIt.input_label || "Input") + '</label><select id="try-in" class="try-select">' +
+        tryIt.rows.map((r, i) => '<option value="' + i + '">' + esc(r.input) + "</option>").join("") + "</select>" +
+        '<div class="try-out">' + (hasBefore ? '<div class="try-cell del"><div class="eyebrow">' + esc(tryIt.before_label || "Before") + '</div><code id="try-before"></code></div>' : "") +
+        '<div class="try-cell add"><div class="eyebrow">' + esc(tryIt.after_label || "After") + '</div><code id="try-after"></code></div></div><div class="small muted" id="try-note"></div></div>';
+    }
+    if (concepts.length) {
+      h += '<div><div class="section-head"><h2>Concepts in this PR</h2><span class="mine">Claude\'s analysis</span></div><div class="concepts">' +
+        concepts.map(c => '<div class="card concept"><h3>' + esc(c.term) + '</h3><div class="short">' + inline(c.short || "") + "</div>" + md(c.explain) +
+          (c.link ? '<div class="small" style="margin-top:8px"><a href="' + esc(c.link) + '" target="_blank" rel="noopener">Read more ↗</a></div>' : "") + "</div>").join("") + "</div></div>";
+    }
+    if (quiz.length) {
+      h += '<div class="card"><div class="section-head"><h2>Check your understanding</h2><span class="score" id="quiz-score"></span></div><div class="stack" style="gap:22px">' +
+        quiz.map((q, i) => '<div class="quiz-q" data-q="' + i + '"><div><strong>' + (i + 1) + ".</strong> " + inline(q.question) + '</div><div class="quiz-opts">' +
+          (q.options || []).map((o, j) => '<button type="button" class="quiz-opt" data-j="' + j + '">' + inline(o) + "</button>").join("") +
+          '</div><div class="quiz-explain" hidden>' + md(q.explain) + "</div></div>").join("") +
+        '</div><div style="margin-top:14px"><button class="btn" id="quiz-reset" type="button">Start over</button></div></div>';
+    }
+    if (!concepts.length && !quiz.length && !(tryIt && (tryIt.rows || []).length)) h +='<div class="card muted">Nothing to learn here: the analysis has no concepts or quiz.</div>';
+    h += "</div>";
+    $("#tab-learn").innerHTML = h;
+    const sel = $("#try-in");
+    if (sel) {
+      const show = () => {
+        const r = tryIt.rows[+sel.value] || {};
+        if ($("#try-before")) $("#try-before").textContent = r.before == null ? "(new behaviour)" : r.before;
+        $("#try-after").textContent = r.after == null ? "" : r.after;
+        $("#try-note").innerHTML = inline(r.note || "");
+      };
+      sel.addEventListener("change", show); show();
+    }
+    const answers = load("quiz", {});
+    $$(".quiz-q").forEach(qel => {
+      const i = +qel.dataset.q;
+      if (answers[i] != null) markQuiz(qel, i, answers[i]);
+      $$(".quiz-opt", qel).forEach(b => b.addEventListener("click", () => {
+        const a = load("quiz", {}); a[i] = +b.dataset.j; save("quiz", a); markQuiz(qel, i, +b.dataset.j); quizScore();
+      }));
+    });
+    const reset = $("#quiz-reset");
+    if (reset) reset.addEventListener("click", () => { save("quiz", {}); renderLearn(); });
+    quizScore();
+  }
+  function markQuiz(qel, i, j) {
+    const right = (A.quiz[i] || {}).answer;
+    $$(".quiz-opt", qel).forEach(b => { const k = +b.dataset.j; b.disabled = true; if (k === right) b.classList.add("right"); else if (k === j) b.classList.add("wrong"); });
+    $(".quiz-explain", qel).hidden = false;
+  }
+  function quizScore() {
+    const el = $("#quiz-score"); if (!el) return;
+    const a = load("quiz", {}), q = A.quiz || [];
+    const answered = Object.keys(a).length, right = Object.keys(a).filter(i => q[i] && q[i].answer === a[i]).length;
+    el.textContent = answered ? right + " / " + answered + " right" : q.length + " questions";
+  }
+
+  // ------------------------------------------------------------ diff tab
+  function renderDiff() {
+    const notes = A.file_notes || {};
+    const viewed = load("viewed", {});
+    let rail = "", body = "";
+    FILES.forEach((f, i) => {
+      const startClosed = ["lockfile", "generated", "binary"].includes(f.category) || f.status === "removed" || (f.additions + f.deletions) > 600 || viewed[f.path];
+      const short = f.path.length > 34 ? "…" + f.path.slice(-33) : f.path;
+      rail += '<a href="#diff" data-file="' + i + '" class="' + (viewed[f.path] ? "viewed" : "") + '"><span class="p" title="' + esc(f.path) + '">' + esc(short) + "</span>" + nums(f) + "</a>";
+      body += '<div class="file' + (startClosed ? "" : " open") + (viewed[f.path] ? " viewed" : "") + '" id="file-' + i + '" data-i="' + i + '">' +
+        '<div class="file-head"><span class="tw">▸</span>' + statusChip(f) + '<span class="path">' + (f.old_path ? esc(f.old_path) + " → " : "") + esc(f.path) + "</span>" +
+        chip("", f.category) + nums(f) + '<label class="viewed-box"><input type="checkbox" class="viewed-cb"' + (viewed[f.path] ? " checked" : "") + "> Viewed</label>" +
+        '<a href="' + esc(f.github_url) + '" target="_blank" rel="noopener" class="small">GitHub ↗</a></div>' +
+        (notes[f.path] ? '<div class="file-note">' + inline(notes[f.path]) + "</div>" : "") +
+        '<div class="file-body"' + (startClosed ? " hidden" : "") + "></div></div>";
+    });
+    $("#tab-diff").innerHTML = '<div class="diff-layout"><nav class="rail" aria-label="Files">' + rail + '</nav><div><div class="toolbar"><button class="btn" id="exp-all" type="button">Expand all</button><button class="btn" id="col-all" type="button">Collapse all</button>' +
+      '<span class="small muted">' + plural(FILES.length, "file") + ' · lockfiles, generated and viewed files start collapsed</span></div>' + body + "</div></div>";
+    $$("#tab-diff .file").forEach(el => { if (el.classList.contains("open")) fillFile(el); });
+    $$("#tab-diff .file-head").forEach(hd => hd.addEventListener("click", e => {
+      if (e.target.closest("a, label, input")) return;
+      toggleFile(hd.parentElement);
+    }));
+    $$("#tab-diff .viewed-cb").forEach(cb => cb.addEventListener("change", () => {
+      const el = cb.closest(".file"), f = FILES[+el.dataset.i], v = load("viewed", {});
+      v[f.path] = cb.checked; save("viewed", v);
+      el.classList.toggle("viewed", cb.checked);
+      $('.rail a[data-file="' + el.dataset.i + '"]').classList.toggle("viewed", cb.checked);
+      if (cb.checked && el.classList.contains("open")) toggleFile(el, false);
+    }));
+    $$("#tab-diff .rail a").forEach(a => a.addEventListener("click", e => { e.preventDefault(); openFile(+a.dataset.file); }));
+    $("#exp-all").addEventListener("click", () => $$("#tab-diff .file").forEach(el => toggleFile(el, true)));
+    $("#col-all").addEventListener("click", () => $$("#tab-diff .file").forEach(el => toggleFile(el, false)));
+  }
+  function fillFile(el) { const b = $(".file-body", el); if (!b.dataset.filled) { b.innerHTML = fileCode(FILES[+el.dataset.i], null); b.dataset.filled = "1"; } }
+  function toggleFile(el, open) {
+    const want = open == null ? !el.classList.contains("open") : open;
+    el.classList.toggle("open", want);
+    $(".file-body", el).hidden = !want;
+    if (want) fillFile(el);
+  }
+  function openFile(i, ref) {
+    const el = $("#file-" + i); if (!el) return;
+    toggleFile(el, true);
+    let target = el;
+    if (ref && ref.start != null) {
+      const attr = ref.side === "old" ? "data-o" : "data-n";
+      const end = ref.end == null ? ref.start : ref.end;
+      const lines = $$(".ln", el).filter(l => { const n = l.getAttribute(attr); return n !== "" && +n >= ref.start && +n <= end; });
+      lines.forEach(l => { l.classList.remove("flash"); void l.offsetWidth; l.classList.add("flash"); });
+      if (lines[0]) target = lines[0];
+    }
+    target.scrollIntoView({ block: target === el ? "start" : "center" });
+  }
+
+  // ------------------------------------------------------------ references → diff
+  document.addEventListener("click", e => {
+    const a = e.target.closest(".reflink[data-ref]"); if (!a) return;
+    e.preventDefault();
+    let ref; try { ref = JSON.parse(a.dataset.ref); } catch (err) { return; }
+    const i = FILES.findIndex(f => f.path === ref.file); if (i < 0) return;
+    showTab("diff");
+    requestAnimationFrame(() => openFile(i, ref));
+  });
+
+  // ------------------------------------------------------------ tabs + theme
+  const TABS = ["summary", "walkthrough", "map", "risks", "learn", "diff"];
+  const rendered = {};
+  const RENDER = { summary: renderSummary, walkthrough: renderWalk, map: renderMap, risks: renderRisks, learn: renderLearn, diff: renderDiff };
+  let currentTab = null;
+  function showTab(name) {
+    if (!TABS.includes(name)) name = "summary";
+    if (!rendered[name]) { RENDER[name](); rendered[name] = true; }
+    $$(".tab").forEach(s => { s.hidden = s.dataset.tab !== name; });
+    $$("#tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === name));
+    const changed = currentTab !== name;
+    currentTab = name;
+    if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    if (changed) window.scrollTo(0, 0);
+    if (name === "map") renderMermaid();
+    if (name === "walkthrough") onScroll();
+  }
+  $$("#tabs a").forEach(a => a.addEventListener("click", e => { e.preventDefault(); showTab(a.dataset.tab); }));
+  window.addEventListener("hashchange", () => showTab(location.hash.slice(1)));
+
+  function applyTheme(t) {
+    if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+    mermaidDone = false;
+    if (rendered.map) { renderMap(); if (currentTab === "map") renderMermaid(); }
+  }
+  let theme = null; try { theme = localStorage.getItem("prg:theme"); } catch (e) { /* none */ }
+  if (theme) document.documentElement.dataset.theme = theme;
+  $("#theme-btn").addEventListener("click", () => {
+    const next = isDark() ? "light" : "dark";
+    try { localStorage.setItem("prg:theme", next); } catch (e) { /* none */ }
+    applyTheme(next);
+  });
+
+  // keyboard: j/k move through walkthrough steps
+  document.addEventListener("keydown", e => {
+    if (currentTab !== "walkthrough" || e.target.closest("input, textarea") || e.metaKey || e.ctrlKey) return;
+    const steps = $$(".step"); if (!steps.length) return;
+    let i = activeStep;
+    if (e.key === "j" || e.key === "ArrowDown" && e.altKey) i = Math.min(steps.length - 1, i + 1);
+    else if (e.key === "k" || e.key === "ArrowUp" && e.altKey) i = Math.max(0, i - 1);
+    else return;
+    e.preventDefault(); setStep(i); steps[i].scrollIntoView({ block: "center" });
+  });
+
+  showTab(location.hash.slice(1) || "summary");
+})();
+</script>
+</body>
+</html>

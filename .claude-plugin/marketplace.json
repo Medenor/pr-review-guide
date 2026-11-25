@@ -1,0 +1,15 @@
+{
+  "name": "pr-review-guide",
+  "description": "pr-review-guide: interactive, pedagogic review pages for GitHub pull requests",
+  "owner": {
+    "name": "Medenor",
+    "url": "https://github.com/Medenor"
+  },
+  "plugins": [
+    {
+      "name": "pr-review-guide",
+      "source": "./plugins/pr-review-guide",
+      "description": "Turns a GitHub pull request into one local HTML review page: verdict, claims check, narrated walkthrough, diagrams, risks, checklist, quiz and the full diff."
+    }
+  ]
+}

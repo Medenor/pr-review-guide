@@ -1,0 +1,37 @@
+name: release-asset
+
+# Attaches a skill-only ZIP (SKILL.md + scripts/ + assets/ + references/) to every published release,
+# for standalone installs and for upload in the Claude apps.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  skill-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches plugin version
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('plugins/pr-review-guide/.claude-plugin/plugin.json'))['version'])")
+          if [ "v$version" != "${{ github.event.release.tag_name }}" ]; then
+            echo "Tag ${{ github.event.release.tag_name }} does not match plugin.json version $version"; exit 1
+          fi
+
+      - name: Self-test
+        run: python3 plugins/pr-review-guide/skills/pr-review-guide/scripts/selftest.py
+
+      - name: Build skill-only ZIP
+        run: |
+          cd plugins/pr-review-guide/skills
+          zip -r "$GITHUB_WORKSPACE/pr-review-guide-skill.zip" pr-review-guide -x '*/__pycache__/*' '*/.DS_Store'
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" pr-review-guide-skill.zip --clobber
